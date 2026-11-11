@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-690.0 -270.0 1380.0 1000.0" width="1380" height="1000">
+<style>.o{fill:none;stroke:#222;stroke-width:1.2}.w{fill:#f4e3b0;stroke:#222;stroke-width:1.2}.p{fill:#cfe3ff;fill-opacity:.5;stroke:#2a62b8;stroke-width:1}.c{fill:none;stroke:#888;stroke-width:.8;stroke-dasharray:6 4}.b{fill:#d9d9d9;stroke:#222;stroke-width:1}.r{fill:#ffd2c2;stroke:#b33;stroke-width:1}.t{font:12px sans-serif;fill:#222}.cg{fill:#c00}</style>
+<rect x="-690.0" y="-270.0" width="1380.0" height="1000.0" fill="#fff"/>
+<rect class="w" x="-650.0" y="0" width="1300.0" height="200.0"/>
+<rect class="o" x="-630.0" y="150.0" width="260.0" height="50.0"/>
+<rect class="o" x="370.0" y="150.0" width="260.0" height="50.0"/>
+<rect class="b" x="-300.0" y="45.0" width="600.0" height="10"/>
+<line class="c" x1="-650.0" y1="50.0" x2="650.0" y2="50.0"/>
+<rect class="b" x="-25.0" y="-230.0" width="50.0" height="420.0" rx="18"/>
+<rect class="b" x="-5.0" y="100.0" width="10.0" height="570.0"/>
+<rect class="w" x="-200.0" y="560.0" width="400.0" height="110.0"/>
+<rect class="o" x="-200.0" y="632.0" width="400.0" height="38.0"/>
+<rect class="b" x="-2.5" y="520.0" width="5" height="160.0"/>
+<rect class="r" x="-275.0" y="-105.0" width="30" height="165.0"/>
+<circle class="p" cx="-260.0" cy="-95.0" r="63.5"/>
+<line class="c" x1="-333.5" y1="-95.0" x2="-186.5" y2="-95.0"/>
+<circle cx="-650.0" cy="-95.0" r="63.5" fill="none" stroke="#aaa" stroke-dasharray="4 3"/>
+<rect class="r" x="245.0" y="-105.0" width="30" height="165.0"/>
+<circle class="p" cx="260.0" cy="-95.0" r="63.5"/>
+<line class="c" x1="186.5" y1="-95.0" x2="333.5" y2="-95.0"/>
+<circle cx="650.0" cy="-95.0" r="63.5" fill="none" stroke="#aaa" stroke-dasharray="4 3"/>
+<circle class="p" cx="0" cy="370.0" r="63.5"/>
+<circle class="cg" cx="0" cy="60.0" r="5"/>
+<rect class="o" x="-17" y="-117" width="34" height="105"/>
+<rect class="o" x="-17" y="-192" width="34" height="75" stroke-dasharray="3 2"/>
+<line class="c" x1="0" y1="-95.0" x2="0" y2="370.0"/>
+<text class="t" x="331.5" y="-91.0">tilt axle x=-95, y=±260</text>
+<text class="t" x="320.0" y="-166.5">grey dashed: wing-tip position (not recommended)</text>
+<text class="t" x="71.5" y="374.0">rear motor x=370</text>
+<text class="t" x="12" y="78.0">CG x=60</text>
+<text class="t" x="208.0" y="615.0">stabilizer 400×110, elevator, fin</text>
+<text class="t" x="-642.0" y="218.0">wing 1300 × 200, LE at x=0</text>
+<text class="t" x="370.0" y="218.0">aileron</text>
+<text class="t" x="31.0" y="-65">batt 2200 / 1300 (dashed)</text>
+<text class="t" x="-670.0" y="700.0">TOP VIEW, 1 unit = 1 mm, nose up. Origin = wing LE on centerline</text>
+<line x1="-670.0" y1="715.0" x2="-570.0" y2="715.0" stroke="#222" stroke-width="2"/>
+<text class="t" x="-565.0" y="719.0">100 mm</text>
+</svg>
