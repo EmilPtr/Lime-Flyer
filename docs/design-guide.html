@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Citrus Design Notes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column, each topic = equations on top, live calculator below.
+   Palette: citrus lime on cool paper-grey, orange as the secondary mark. */
+:root{
+  --bg:#f3f5ef; --surface:#ffffff; --surface2:#ebefe3; --fg:#172015; --muted:#55604f; --line:#d3dac7;
+  --accent:#3d6a0c; --accent-soft:#e2eecb; --warm:#b4530a; --warm-soft:#fae8d4;
+  --good:#2c7a1c; --warn:#9a5806; --bad:#b3261e;
+  --good-bg:#dff0d5; --warn-bg:#f9e9cd; --bad-bg:#f7dbd7;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --c-force:#b4470a; --c-speed:#1f5fbf; --c-len:#0b7a6f; --c-area:#8a6a00; --c-coef:#6d4ac2;
+  --c-mass:#b0306a; --c-power:#b3261e; --c-elec:#2c7a1c; --c-const:#55604f;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e130c; --surface:#161d13; --surface2:#1e2719; --fg:#e7eddf; --muted:#9ba68f; --line:#2c3827;
+    --accent:#a6e22e; --accent-soft:#25331a; --warm:#ff9a4d; --warm-soft:#3a2614;
+    --good:#8fd06a; --warn:#f0b64a; --bad:#ff8a80;
+    --good-bg:#1d3118; --warn-bg:#3a2d12; --bad-bg:#3b1a18;
+    --c-force:#ff9a4d; --c-speed:#6cb0ff; --c-len:#4fd1c1; --c-area:#e0c050; --c-coef:#b39cff;
+    --c-mass:#ff7eb0; --c-power:#ff8a80; --c-elec:#8fd06a; --c-const:#9ba68f;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e130c; --surface:#161d13; --surface2:#1e2719; --fg:#e7eddf; --muted:#9ba68f; --line:#2c3827;
+  --accent:#a6e22e; --accent-soft:#25331a; --warm:#ff9a4d; --warm-soft:#3a2614;
+  --good:#8fd06a; --warn:#f0b64a; --bad:#ff8a80;
+  --good-bg:#1d3118; --warn-bg:#3a2d12; --bad-bg:#3b1a18;
+  --c-force:#ff9a4d; --c-speed:#6cb0ff; --c-len:#4fd1c1; --c-area:#e0c050; --c-coef:#b39cff;
+  --c-mass:#ff7eb0; --c-power:#ff8a80; --c-elec:#8fd06a; --c-const:#9ba68f;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.6;
+  padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1040px;margin:0 auto}
+h1,h2,h3,h4{line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.8rem,4.6vw,2.7rem);font-weight:600;letter-spacing:-.02em}
+h2{font-size:1.55rem;font-weight:600;letter-spacing:-.01em}
+h3{font-size:1rem;font-weight:600}
+p{margin:0}
+a{color:var(--accent)}
+.kicker{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.lead{max-width:68ch;color:var(--muted);margin-top:14px;font-size:1.02rem}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.chips a,.chips button{font:inherit;font-size:.85rem;text-decoration:none;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.chips a:hover,.chips button:hover{border-color:var(--accent)}
+.chips button[aria-pressed="true"]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+section{margin-top:60px}
+section>.lead{margin-bottom:22px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:14px;margin-bottom:22px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.card h3{margin-bottom:8px}
+.card p{color:var(--muted);font-size:.92rem}
+.card p+p{margin-top:8px}
+.eq{font-family:var(--mono);font-size:.9rem;background:var(--surface2);border-radius:8px;padding:10px 12px;margin:0 0 10px;overflow-x:auto;white-space:pre;color:var(--fg)}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface2);border-radius:4px;padding:1px 5px}
+.calc{display:grid;grid-template-columns:minmax(0,310px) minmax(0,1fr);gap:22px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+@media (max-width:760px){.calc{grid-template-columns:minmax(0,1fr)}}
+.fields{display:grid;gap:10px;align-content:start}
+.fields.wide{grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr))}
+.f{display:grid;gap:3px}
+.fl{font-size:.82rem;color:var(--muted)}
+.fl small{font-family:var(--mono);font-size:.8em}
+input[type=number],input[type=text],select{font:inherit;font-family:var(--mono);font-size:.9rem;width:100%;min-width:0;padding:6px 8px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px}
+input[type=text]{font-family:var(--sans)}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr));gap:10px;align-content:start}
+.stat{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;display:grid;gap:2px;align-content:start;min-width:0}
+.sl{font-size:.76rem;color:var(--muted)}
+.sv{font-family:var(--mono);font-size:1.15rem;font-weight:500;font-variant-numeric:tabular-nums}
+.sv small{font-size:.7rem;color:var(--muted);font-weight:400}
+.pill{font-size:.72rem;border-radius:999px;padding:1px 8px;justify-self:start;background:var(--surface2);color:var(--muted)}
+.pill[data-s="good"]{background:var(--good-bg);color:var(--good)}
+.pill[data-s="warn"]{background:var(--warn-bg);color:var(--warn)}
+.pill[data-s="bad"]{background:var(--bad-bg);color:var(--bad)}
+.right{display:grid;gap:16px;min-width:0;align-content:start}
+.note{font-size:.84rem;color:var(--muted)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:inherit;font-size:.85rem;color:var(--fg);background:var(--surface2);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+svg{display:block;max-width:100%;height:auto}
+.gr{stroke:var(--line);stroke-width:1}
+.axl{stroke:var(--muted);stroke-width:1.2}
+.tk{fill:var(--muted);font:11px var(--mono)}
+.al{fill:var(--muted);font:12px var(--sans)}
+.ref{stroke:var(--fg);stroke-width:1;stroke-dasharray:4 4;opacity:.7}
+.rl{fill:var(--fg);font:11px var(--mono)}
+.ln-a{fill:none;stroke:var(--accent);stroke-width:2.4}
+.ln-b{fill:none;stroke:var(--warm);stroke-width:2.4}
+.dot{fill:var(--warm);stroke:var(--surface);stroke-width:2}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.82rem;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:.76rem;color:var(--muted);font-weight:500;background:var(--surface2)}
+tr:last-child td{border-bottom:0}
+td input{padding:4px 6px}
+.x{font:inherit;background:none;border:0;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:2px 8px}
+.x:hover{color:var(--bad)}
+.chordbar{position:relative;height:34px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;margin:8px 0 6px}
+.chordbar .zone{position:absolute;top:0;bottom:0;background:var(--accent-soft);border-left:1px dashed var(--accent);border-right:1px dashed var(--accent)}
+.chordbar .mk{position:absolute;top:-6px;bottom:-6px;width:0;border-left:3px solid var(--accent)}
+.chordbar .mk.ac{border-left:2px dotted var(--muted)}
+.chordbar .mk.np{border-left:3px solid var(--warm)}
+.chordbar .ends{position:absolute;left:0;right:0;bottom:-20px;display:flex;justify-content:space-between;font:11px var(--mono);color:var(--muted)}
+.sv-wing{fill:var(--surface2);stroke:var(--muted);stroke-width:1.5}
+.sv-fus{fill:var(--surface);stroke:var(--muted);stroke-width:1.5}
+.sv-tail{fill:var(--warm-soft);stroke:var(--warm);stroke-width:1.5}
+.sv-prop{fill:var(--accent);fill-opacity:.18;stroke:var(--accent);stroke-width:1.5}
+.sv-cg{fill:var(--bg);stroke:var(--fg);stroke-width:2}
+.sv-line{stroke:var(--muted);stroke-width:1;stroke-dasharray:5 4}
+.sv-t{fill:var(--fg);font-family:var(--sans)}
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:10px;margin-top:14px}
+.term{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:11px 13px;min-width:0}
+.term h4{font-size:.95rem;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.term .cat{font:500 .68rem var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.term p{font-size:.88rem;color:var(--muted);margin-top:4px}
+.search{margin-top:16px;max-width:420px}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px;margin:0 0 22px;padding:0;list-style:none;counter-reset:step}
+.flow li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:.9rem;color:var(--muted)}
+.flow li b{display:block;color:var(--fg);margin-bottom:3px}
+.warnbox{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:10px 14px;font-size:.88rem;margin-top:16px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+/* Quantity colors: same color = same kind of quantity in equations, inputs and results */
+var{font-style:normal;font-family:var(--mono);font-weight:500}
+.k-force,input.k-force{color:var(--c-force)}
+.k-speed,input.k-speed{color:var(--c-speed)}
+.k-len,input.k-len{color:var(--c-len)}
+.k-area,input.k-area{color:var(--c-area)}
+.k-coef,input.k-coef{color:var(--c-coef)}
+.k-mass,input.k-mass{color:var(--c-mass)}
+.k-power,input.k-power{color:var(--c-power)}
+.k-elec,input.k-elec{color:var(--c-elec)}
+.k-const,input.k-const{color:var(--c-const)}
+.keyrow{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:20px;font-size:.84rem;color:var(--muted)}
+.key em{font-style:normal;margin-left:6px}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="kicker">Citrus Tiltrotor · design notes</p>
+  <h1>Plane design, from the equations up</h1>
+  <p class="lead">Every equation and term you will use for the Y tilt-tri, each with a live calculator. The numbers start from this project (800 × 230 mm foam wing, 3S, three RS2205s). Change them and everything below follows. Your inputs are remembered in this browser.</p>
+  <nav class="chips" aria-label="Sections">
+    <a href="#sec-aircraft">Your aircraft</a>
+    <a href="#sec-lift">Lift &amp; stall</a>
+    <a href="#sec-drag">Drag &amp; cruise</a>
+    <a href="#sec-thrust">Thrust &amp; hover</a>
+    <a href="#sec-cg">CG &amp; stability</a>
+    <a href="#sec-layout">Rotor layout</a>
+    <a href="#sec-ctrl">Control &amp; ArduPilot</a>
+    <a href="#sec-terms">Glossary</a>
+    <a href="#sec-rules">Rules of thumb</a>
+  </nav>
+  <p class="lead" style="margin-top:22px">Colors mark the kind of quantity, so one color means the same thing in every equation, input and result.</p>
+  <div class="keyrow" aria-label="Color key">
+    <span class="key"><var class="k-force">L D W T</var><em>force</em></span>
+    <span class="key"><var class="k-speed">V</var><em>speed</em></span>
+    <span class="key"><var class="k-len">b c r x d</var><em>length</em></span>
+    <span class="key"><var class="k-area">S</var><em>area</em></span>
+    <span class="key"><var class="k-mass">m</var><em>mass</em></span>
+    <span class="key"><var class="k-coef">CL CD AR e η</var><em>ratio, no units</em></span>
+    <span class="key"><var class="k-power">P</var><em>power</em></span>
+    <span class="key"><var class="k-elec">I V_batt Ah KV</var><em>electrical</em></span>
+    <span class="key"><var class="k-const">ρ g π</var><em>constants</em></span>
+  </div>
+</header>
+
+<section id="sec-aircraft">
+  <h2>Your aircraft</h2>
+  <p class="lead">These inputs feed every calculator on the page. Pick a preset or type your own. The mass and thrust figures are estimates until you weigh the parts and bench-test a motor.</p>
+  <div class="calc">
+    <div>
+      <div class="fields" data-fields="span,chord,mass,thrust,cells,mah,propd,rho,clmax"></div>
+    </div>
+    <div class="right">
+      <div class="stats" data-stats="area|Wing area|dm²;ar|Aspect ratio|;loading|Wing loading|g/dm²;stall|Stall speed|m/s;tw|Thrust : weight|;hthr|Hover throttle|%"></div>
+      <div>
+        <p class="note" style="margin-bottom:8px">Presets (span × chord, estimated mass):</p>
+        <div class="btns" id="presets"></div>
+      </div>
+      <p class="note">Wing is treated as a rectangle, so mean chord = chord. Thrust per motor is the static thrust you measure on your own bench with the battery you will fly.</p>
+    </div>
+  </div>
+</section>
+
+<section id="sec-lift">
+  <h2>Lift and stall speed</h2>
+  <p class="lead">A wing makes lift by turning air downward. How much depends on how fast it moves through the air, how big it is, and how hard it works (its lift coefficient).</p>
+  <div class="cards">
+    <div class="card"><h3>Lift</h3>
+      <pre class="eq">L = ½ · ρ · V² · S · CL</pre>
+      <p><var class="k-const">ρ</var> air density (1.225 kg/m³), <var class="k-speed">V</var> airspeed (m/s), <var class="k-area">S</var> wing area (m²), <var class="k-coef">CL</var> lift coefficient. It rises with angle of attack until the wing stalls. Double the speed and you get four times the lift.</p></div>
+    <div class="card"><h3>Level flight</h3>
+      <pre class="eq">L = W = m · g
+V = √( 2W / (ρ · S · CL) )</pre>
+      <p>To hold altitude, lift equals weight. At any chosen CL that fixes the speed you must fly.</p></div>
+    <div class="card"><h3>Stall speed</h3>
+      <pre class="eq">V_stall = √( 2W / (ρ · S · CLmax) )</pre>
+      <p>CLmax is the most lift the wing can make before the airflow separates. For a tiltrotor, stall speed is the speed the transition has to reach before the rotors stop carrying the weight.</p></div>
+    <div class="card"><h3>Wing loading</h3>
+      <pre class="eq">loading = m / S   [grams per dm²]</pre>
+      <p>Mass per wing area. Low loading is floaty and slow. High loading is fast, penetrates wind, and gives less margin in the transition.</p></div>
+  </div>
+  <div class="calc">
+    <div class="fields" data-fields="vtest,cltest"></div>
+    <div class="right">
+      <div class="stats" data-stats="liftg|Lift at that speed and CL|g;clreq|CL needed to hold level|;vlevel|Level-flight speed at that CL|m/s"></div>
+      <svg id="ch-lift" role="img" aria-label="Lift versus airspeed"></svg>
+      <div class="legend"><span><i style="background:var(--accent)"></i>Maximum lift (CL = CLmax)</span><span><i style="background:var(--warm)"></i>Lift at your chosen CL</span></div>
+      <p class="note">Where a curve crosses the weight line is the speed at which the wing alone can carry the aircraft. The green curve crossing is your stall speed.</p>
+    </div>
+  </div>
+</section>
+
+<section id="sec-drag">
+  <h2>Drag, aspect ratio and cruise power</h2>
+  <p class="lead">Drag has two parts that trade off against speed. Slow flight needs a high CL, which costs induced drag. Fast flight pushes the whole airframe through the air, which costs parasitic drag. The sweet spot sits between.</p>
+  <div class="cards">
+    <div class="card"><h3>Aspect ratio</h3>
+      <pre class="eq">AR = b² / S   (= b / c if rectangular)</pre>
+      <p>Long and thin (AR 8 to 10) is efficient. Short and wide (AR 3 to 4) is stiff and stalls gently but pays in induced drag. A VTOL that cruises briefly can accept a low AR.</p></div>
+    <div class="card"><h3>Drag coefficient</h3>
+      <pre class="eq">CDi = CL² / (π · e · AR)
+CD  = CD0 + CDi</pre>
+      <p><var class="k-coef">CDi</var> is induced drag, the cost of making lift. <var class="k-coef">CD0</var> is parasitic drag from skin, nacelles, gaps and struts. <var class="k-coef">e</var> (0.6 to 0.9) says how close the wing is to ideal.</p></div>
+    <div class="card"><h3>Drag force and L/D</h3>
+      <pre class="eq">D   = ½ · ρ · V² · S · CD
+L/D = CL / CD</pre>
+      <p>L/D is how many grams of lift you get per gram of drag. A glide covers L/D times its height in distance.</p></div>
+    <div class="card"><h3>Power and current</h3>
+      <pre class="eq">P_aero = D · V
+P_elec = P_aero / η
+I      = P_elec / V_batt</pre>
+      <p><var class="k-coef">η</var> bundles motor, ESC and prop efficiency (0.4 to 0.6 for small props). <var class="k-elec">V_batt</var> is about 3.7 V per cell under load.</p></div>
+  </div>
+  <div class="calc">
+    <div class="fields" data-fields="vcruise,cd0,e,etap"></div>
+    <div class="right">
+      <div class="stats" data-stats="clc|CL at cruise|;cdi|Induced CDi|;cdt|Total CD|;ld|L/D|;dragg|Drag|g;pael|Aero power|W;pel|Electrical power|W;icr|Battery current|A"></div>
+      <svg id="ch-power" role="img" aria-label="Electrical power versus airspeed"></svg>
+      <p class="note">The dip in the curve is the speed that needs the least power, so it gives the longest flight time. Below it, induced drag climbs. Above it, parasitic drag climbs. Flying faster than the dip is fine, it just costs more.</p>
+    </div>
+  </div>
+</section>
+
+<section id="sec-thrust">
+  <h2>Thrust, hover and battery</h2>
+  <p class="lead">In hover the rotors are the wing. Everything here comes from how much thrust three small props make, and how much power that takes.</p>
+  <div class="cards">
+    <div class="card"><h3>Thrust-to-weight</h3>
+      <pre class="eq">T/W = (n · T_motor) / W</pre>
+      <p>2 is the bare minimum for a VTOL. 2.5 or more leaves room for control corrections, gusts and the transition.</p></div>
+    <div class="card"><h3>Throttle and thrust</h3>
+      <pre class="eq">thrust ∝ throttle²
+hover throttle ≈ √(W / T_total)
+thrust ∝ V_batt²</pre>
+      <p>Because thrust goes with the square, half your thrust needs about 70% throttle. Going from 3S to 4S gives about 1.8 times the thrust on the same prop.</p></div>
+    <div class="card"><h3>Momentum theory</h3>
+      <pre class="eq">P_ideal = T^1.5 / √(2 · ρ · A_disc)
+P_hover = P_ideal / FM
+disc loading = W / A_disc</pre>
+      <p>Ideal hover power drops as total disc area grows, so bigger props hover more cheaply. The figure of merit FM (0.4 to 0.6 for small props) covers real losses.</p></div>
+    <div class="card"><h3>Battery</h3>
+      <pre class="eq">energy (Wh)  = V_batt · Ah
+time (min)   = 60 · capacity · usable / I
+I_max (A)    = C · capacity (Ah)</pre>
+      <p>Use about 80% of a LiPo so you never fly it flat. The C rating limits the current you can draw, and voltage sags as you pull it.</p></div>
+    <div class="card"><h3>Prop pitch speed</h3>
+      <pre class="eq">RPM     ≈ KV · V_batt · 0.85
+V_pitch = RPM · pitch</pre>
+      <p>A prop only pushes while the aircraft moves slower than its pitch speed. You want pitch speed at least 1.5 times your cruise speed.</p></div>
+  </div>
+  <div class="calc">
+    <div class="fields" data-fields="fm,usable,kv,pitch"></div>
+    <div class="right">
+      <div class="stats" data-stats="ttot|Total thrust|g;tw2|Thrust : weight|;hthr2|Hover throttle|%;dl|Disc loading|N/m²;ph|Hover power|W;gw|Hover efficiency|g/W;ih|Hover current|A;th|Hover time|min;ps|Prop pitch speed|m/s;t4|Est. thrust on 4S|g each"></div>
+      <p class="note">Thrust per motor, cell count, capacity and prop diameter come from Your aircraft. Hover assumes the three rotors share load equally. The real split depends on the CG (see Rotor layout). Real flights land about 20% below this time because of sag and corrections.</p>
+    </div>
+  </div>
+</section>
+
+<section id="sec-cg">
+  <h2>Center of gravity and stability</h2>
+  <p class="lead">A plane is pitch-stable when the CG sits ahead of the neutral point, the spot where the whole aircraft's lift effectively acts. The gap between them is the static margin.</p>
+  <div class="cards">
+    <div class="card"><h3>Center of gravity</h3>
+      <pre class="eq">x_cg = Σ( m_i · x_i ) / Σ m_i</pre>
+      <p>The mass-weighted average position of every part, measured from one fixed reference (here the wing leading edge, positive aft). Moving a heavy part far from the CG shifts it a lot, so trim with the battery.</p></div>
+    <div class="card"><h3>Static margin</h3>
+      <pre class="eq">SM = (x_np − x_cg) / c</pre>
+      <p>Distance between neutral point and CG, as a fraction of the chord. Negative is unstable. 5 to 15% is the usual target. Too large and it gets nose-heavy.</p></div>
+    <div class="card"><h3>Tail volume</h3>
+      <pre class="eq">V_H = S_h · l_t / (S · c)
+V_V = S_v · l_t / (S · b)
+V-tail:  S_h = S_tail · cos²Γ
+         S_v = S_tail · sin²Γ</pre>
+      <p>Tail area times its lever arm, relative to the wing. Bigger or farther tail means more stability. <var class="k-coef">Γ</var> is the angle of each tail panel from horizontal.</p></div>
+    <div class="card"><h3>Neutral point (rough)</h3>
+      <pre class="eq">a    = 2π / (1 + 2/(e·AR))
+dε/dα = 2a / (π · AR)
+h_np = 0.25 + (a_t/a)(1 − dε/dα)·V_H·0.9</pre>
+      <p>A bare wing's neutral point is at 25% chord. The tail pushes it aft by an amount set by tail volume, less the wing's downwash on the tail. This is a hand estimate. Check it in XFLR5 before trusting it.</p></div>
+  </div>
+  <div class="calc">
+    <div>
+      <div class="fields" data-fields="cgpct,tailA,gamma,lt,tailAR"></div>
+    </div>
+    <div class="right">
+      <div class="stats" data-stats="hnp|Neutral point|% chord;sm|Static margin|% chord;vh|Tail volume V_H|;vv|Tail volume V_V|;sh|Horizontal tail area|dm²"></div>
+      <div>
+        <div class="chordbar" id="chordbar" aria-hidden="true">
+          <div class="zone" id="cb-zone"></div>
+          <div class="mk ac" id="cb-ac"></div>
+          <div class="mk np" id="cb-np"></div>
+          <div class="mk" id="cb-cg"></div>
+          <div class="ends"><span>leading edge</span><span>trailing edge</span></div>
+        </div>
+        <div class="legend" style="margin-top:26px">
+          <span><i style="background:var(--accent)"></i>CG</span>
+          <span><i style="background:var(--warm)"></i>Neutral point</span>
+          <span><i style="background:var(--muted)"></i>Wing aerodynamic center (25%)</span>
+          <span><i style="background:var(--accent-soft);outline:1px dashed var(--accent)"></i>CG zone for 5 to 15% margin</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin:26px 0 8px">CG worksheet</h3>
+  <p class="note" style="margin-bottom:10px">Measure each part's position in mm behind the wing leading edge (negative means ahead of it) and enter it. Parts without a position count toward the weight but not the CG. Starting masses come from the BOM.</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Part</th><th style="width:110px">Mass (g)</th><th style="width:150px">Position (mm)</th><th style="width:44px"></th></tr></thead>
+    <tbody id="parts-body"></tbody>
+  </table></div>
+  <div class="btns" style="margin:12px 0">
+    <button class="btn" type="button" id="add-part">Add part</button>
+    <button class="btn" type="button" id="use-cg">Use this CG above</button>
+    <button class="btn" type="button" id="use-mass">Use this total as aircraft mass</button>
+    <button class="btn" type="button" id="reset-parts">Reset table</button>
+  </div>
+  <div class="stats" data-stats="ptot|Table total|g;pplaced|Parts placed|%;pcg|Computed CG|mm aft of LE;pcgp|Computed CG|% chord"></div>
+</section>
+
+<section id="sec-layout">
+  <h2>Rotor layout and hover balance</h2>
+  <p class="lead">In hover there is no wing, so the three motors balance the aircraft like a seesaw around the CG. The geometry decides how much each motor has to push.</p>
+  <div class="cards">
+    <div class="card"><h3>Force balance</h3>
+      <pre class="eq">T_front_total + T_rear = W</pre>
+      <p>The three thrusts together equal the weight. The two front motors count as one combined thrust.</p></div>
+    <div class="card"><h3>Moment balance</h3>
+      <pre class="eq">T_front_total · d_front = T_rear · d_rear</pre>
+      <p>Thrust times arm length, measured from the CG, must cancel front against rear. Solving both equations gives each motor's share:</p>
+      <pre class="eq" style="margin-top:8px">T_rear        = W · d_f / (d_f + d_r)
+T_front_total = W · d_r / (d_f + d_r)</pre></div>
+    <div class="card"><h3>Clearances</h3>
+      <pre class="eq">axis ahead of LE = d_front − x_cg
+prop-to-wing gap  = that − r
+prop-to-prop gap  = 2·y − 2r
+prop-to-body gap  = y − r − w/2</pre>
+      <p><var class="k-len">r</var> is the prop radius, <var class="k-len">y</var> the nacelle's distance from the centerline, <var class="k-len">w</var> the fuselage width. Positive gaps mean no contact. Leave at least 20 mm to the wing and 10 mm elsewhere.</p></div>
+  </div>
+  <div class="calc">
+    <div>
+      <div class="fields" data-fields="dfront,drear,ny,fusw,ct"></div>
+      <p class="note" style="margin-top:10px">Starting values are placeholders. Replace them with your own layout. CG position, wing size, tail, prop size and mass come from the sections above.</p>
+    </div>
+    <div class="right">
+      <div class="stats" data-stats="trear|Rear motor thrust|g;tfront|Each front motor thrust|g;fr|Rear : front thrust|;thr3|Highest motor throttle|%;g1|Prop to wing gap|mm;g2|Prop to prop gap|mm;g3|Prop to fuselage gap|mm;g4|Rear prop to tail gap|mm;len|Nose to tail (plan view)|mm"></div>
+      <svg id="topview" role="img" aria-label="Top view of the aircraft layout drawn to scale"></svg>
+      <p class="note">Drawn to scale, nose at the top. The dashed line runs front axis to rear motor through the CG. If the rear prop disc sits above or below the tail rather than level with it, a negative tail gap is fine.</p>
+    </div>
+  </div>
+</section>
+
+<section id="sec-ctrl">
+  <h2>Control surfaces, transition and ArduPilot</h2>
+  <p class="lead">The flight controller mixes your stick inputs into motor speeds, tilt angles and surface movements. What each stick does depends on which phase you are in.</p>
+  <div class="cards">
+    <div class="card"><h3>In hover (rotors do the work)</h3>
+      <p><b>Roll:</b> the two front motors push unequally.</p>
+      <p><b>Pitch:</b> front motors against the rear motor.</p>
+      <p><b>Yaw:</b> the front nacelles tilt in opposite directions.</p>
+      <p><b>Altitude:</b> all three motors together.</p></div>
+    <div class="card"><h3>In cruise (wing does the work)</h3>
+      <p><b>Roll:</b> ailerons.</p>
+      <p><b>Pitch:</b> both V-tail surfaces move the same way.</p>
+      <p><b>Yaw:</b> V-tail surfaces move opposite ways (a ruddervator mix).</p>
+      <p><b>Speed:</b> the two front motors; the rear motor is off.</p></div>
+    <div class="card"><h3>Parts of the autopilot</h3>
+      <p><b>IMU:</b> gyro and accelerometer inside the flight controller. They measure rotation and acceleration thousands of times a second.</p>
+      <p><b>PID:</b> the control loop that turns attitude error into corrections. Tuning sets how firm and how smooth it feels.</p>
+      <p><b>SITL:</b> a simulator that runs the real ArduPilot code, so you can test before risking hardware.</p></div>
+  </div>
+  <ol class="flow">
+    <li><b>1. Hover</b>Rotors vertical. All three motors carry the weight.</li>
+    <li><b>2. Tilt forward</b>Front nacelles rotate and the aircraft accelerates.</li>
+    <li><b>3. Wing takes over</b>Once airspeed passes stall speed, lift carries the weight. The rear motor winds down.</li>
+    <li><b>4. Cruise</b>Flying as a plane on the front motors and control surfaces.</li>
+  </ol>
+  <p class="note">Landing runs this in reverse. The ArduPilot name for this kind of aircraft is a QuadPlane. Typical modes are QSTABILIZE, QHOVER and QLOITER (rotor flight), FBWA (assisted wing flight) and RTL (return to launch). Parameter names start with <code>Q_</code>, for example the tilt settings. Check exact names and ranges in the ArduPilot documentation for the firmware version you install.</p>
+</section>
+
+<section id="sec-terms">
+  <h2>Glossary</h2>
+  <p class="lead">Every term used above, plus the ones you will meet while building.</p>
+  <div class="chips" id="termcats" aria-label="Glossary category"></div>
+  <input class="search" type="text" id="termq" placeholder="Search terms" aria-label="Search glossary">
+  <div class="terms" id="terms"></div>
+</section>
+
+<section id="sec-rules">
+  <h2>Rules of thumb</h2>
+  <p class="lead">Targets that are common in hobby aircraft. They are starting points, not guarantees. Test and measure.</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Quantity</th><th>Target</th><th>Why</th></tr></thead>
+    <tbody id="rules"></tbody>
+  </table></div>
+  <div class="warnbox">All results on this page come from simple models. They will be off by 10 to 30% for a small printed or foam aircraft. Weigh your parts, bench-test a motor, check the CG on a real balance, and simulate in ArduPilot SITL before the first flight.</div>
+</section>
+</div>
+
+<script>
+(function(){
+'use strict';
+var G=9.81;
+var $=function(id){return document.getElementById(id)};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+var fx=function(v,d){return isFinite(v)?v.toFixed(d==null?1:d):'–'};
+
+var SPEC={
+ span:{l:'Wing span',u:'mm',s:10,h:'Tip to tip'},
+ chord:{l:'Wing chord',u:'mm',s:5,h:'Leading edge to trailing edge'},
+ mass:{l:'Aircraft mass',u:'g',s:10,h:'All-up weight, ready to fly'},
+ thrust:{l:'Static thrust per motor',u:'g',s:10,h:'Measure with your battery and prop. The default is an estimate.'},
+ cells:{l:'Battery cells',u:'S',s:1},
+ mah:{l:'Battery capacity',u:'mAh',s:100},
+ propd:{l:'Prop diameter',u:'in',s:0.5},
+ rho:{l:'Air density',u:'kg/m³',s:0.01,h:'1.225 at sea level and 15 C'},
+ clmax:{l:'Max lift coefficient',u:'CLmax',s:0.05,h:'Foam board with a rounded nose: about 0.8 to 1.1'},
+ vtest:{l:'Airspeed',u:'m/s',s:0.5},
+ cltest:{l:'Lift coefficient',u:'CL',s:0.05},
+ vcruise:{l:'Cruise speed',u:'m/s',s:0.5},
+ cd0:{l:'Parasitic drag',u:'CD0',s:0.005,h:'Whole aircraft at zero lift. Draggy hobby planes: 0.04 to 0.10'},
+ e:{l:'Wing efficiency',u:'e',s:0.05,h:'0.6 to 0.9'},
+ etap:{l:'Motor + prop efficiency',u:'η',s:0.05,h:'Electric power to useful thrust power: 0.4 to 0.6'},
+ fm:{l:'Hover figure of merit',u:'FM',s:0.05,h:'Rotor efficiency vs ideal. Small props: 0.4 to 0.6'},
+ usable:{l:'Usable battery',u:'%',s:5},
+ kv:{l:'Motor KV',u:'rpm/V',s:100},
+ pitch:{l:'Prop pitch',u:'in',s:0.1},
+ cgpct:{l:'CG position',u:'% chord',s:0.5,h:'Measured from the leading edge'},
+ tailA:{l:'V-tail total area',u:'dm²',s:0.1},
+ gamma:{l:'V-tail angle Γ',u:'deg',s:1,h:'Angle of each panel from horizontal'},
+ lt:{l:'CG to tail quarter-chord',u:'mm',s:10},
+ tailAR:{l:'Tail aspect ratio',u:'',s:0.1,h:'Rough estimate'},
+ dfront:{l:'Front tilt axis ahead of CG',u:'mm',s:5},
+ drear:{l:'Rear motor behind CG',u:'mm',s:5},
+ ny:{l:'Nacelle offset from centerline',u:'mm',s:5},
+ fusw:{l:'Fuselage width',u:'mm',s:5},
+ ct:{l:'Tail panel chord',u:'mm',s:5}
+};
+var DEF={span:800,chord:230,mass:745,thrust:680,cells:3,mah:2200,propd:5,rho:1.225,clmax:0.9,
+ vtest:10,cltest:0.5,vcruise:13,cd0:0.06,e:0.7,etap:0.5,fm:0.5,usable:80,kv:2300,pitch:4.5,
+ cgpct:27,tailA:7,gamma:40,lt:450,tailAR:3,dfront:150,drear:300,ny:150,fusw:50,ct:90};
+var DEFPARTS=[
+ {n:'Front-left motor + prop',m:34,x:''},{n:'Front-right motor + prop',m:34,x:''},{n:'Rear motor + prop',m:34,x:''},
+ {n:'3 ESCs',m:30,x:''},{n:'Flight controller',m:10,x:''},{n:'Receiver',m:5,x:''},{n:'Battery 3S 2200',m:190,x:''},
+ {n:'2 tilt servos',m:26,x:''},{n:'4 control servos',m:36,x:''},{n:'Wiring and BEC',m:40,x:''},
+ {n:'Carbon rods and boom',m:30,x:''},{n:'Foam wing',m:90,x:''},{n:'Fuselage, tail, nacelles, mounts',m:190,x:''}];
+var PRESETS=[['1300 × 210',1300,210,850],['1000 × 170',1000,170,750],['900 × 200',900,200,750],
+ ['800 × 200',800,200,735],['800 × 230',800,230,745],['700 × 150',700,150,600]];
+
+var S=JSON.parse(JSON.stringify(DEF));
+var parts=JSON.parse(JSON.stringify(DEFPARTS));
+var KEY='citrus-design-notes-v1';
+try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);if(o&&o.S){for(var k in o.S){if(k in DEF&&isFinite(o.S[k]))S[k]=o.S[k]}}if(o&&Array.isArray(o.parts)&&o.parts.length)parts=o.parts}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({S:S,parts:parts}))}catch(e){}}
+
+/* ---------- builders ---------- */
+/* symbol + quantity kind for every input and result, so numbers share the equation colors */
+var KM={
+ span:['b','len'],chord:['c','len'],mass:['m','mass'],thrust:['T','force'],cells:['S','elec'],mah:['Ah','elec'],
+ propd:['2r','len'],rho:['ρ','const'],clmax:['CLmax','coef'],vtest:['V','speed'],cltest:['CL','coef'],
+ vcruise:['V','speed'],cd0:['CD0','coef'],e:['e','coef'],etap:['η','coef'],fm:['FM','coef'],usable:['usable','coef'],
+ kv:['KV','elec'],pitch:['pitch','len'],cgpct:['x_cg','len'],tailA:['S_tail','area'],gamma:['Γ','coef'],
+ lt:['l_t','len'],tailAR:['AR_t','coef'],dfront:['d_front','len'],drear:['d_rear','len'],ny:['y','len'],
+ fusw:['w','len'],ct:['c_t','len'],
+ area:['S','area'],ar:['AR','coef'],loading:['m/S','mass'],stall:['V_stall','speed'],tw:['T/W','coef'],hthr:['','coef'],
+ liftg:['L','force'],clreq:['CL','coef'],vlevel:['V','speed'],clc:['CL','coef'],cdi:['CDi','coef'],cdt:['CD','coef'],
+ ld:['L/D','coef'],dragg:['D','force'],pael:['P_aero','power'],pel:['P_elec','power'],icr:['I','elec'],
+ ttot:['T_total','force'],tw2:['T/W','coef'],hthr2:['','coef'],dl:['','force'],ph:['P_hover','power'],gw:['','power'],
+ ih:['I','elec'],th:['','elec'],ps:['V_pitch','speed'],t4:['T','force'],hnp:['h_np','coef'],sm:['SM','coef'],
+ vh:['V_H','coef'],vv:['V_V','coef'],sh:['S_h','area'],ptot:['Σm','mass'],pplaced:['','mass'],pcg:['x_cg','len'],
+ pcgp:['x_cg / c','len'],trear:['T_rear','force'],tfront:['T_front','force'],fr:['','coef'],thr3:['','coef'],
+ g1:['','len'],g2:['','len'],g3:['','len'],g4:['','len'],len:['','len']
+};
+function kindOf(k){return (KM[k]||['','const'])[1]}
+function symHTML(k){var m=KM[k];return m&&m[0]?'<var class="k-'+m[1]+'">'+esc(m[0])+'</var> ':''}
+/* color the variables inside every equation block */
+var EQT=[['T_front_total','force'],['T_rear','force'],['T_motor','force'],['T_total','force'],['T/W','coef'],['L/D','coef'],
+ ['V_stall','speed'],['V_pitch','speed'],['V_batt','elec'],['V_H','coef'],['V_V','coef'],['x_cg','len'],['x_np','len'],
+ ['x_i','len'],['m_i','mass'],['l_t','len'],['d_front','len'],['d_rear','len'],['d_f','len'],['d_r','len'],
+ ['S_tail','area'],['S_h','area'],['S_v','area'],['A_disc','area'],['P_ideal','power'],['P_hover','power'],
+ ['P_aero','power'],['P_elec','power'],['I_max','elec'],['a_t','coef'],['h_np','coef'],['dε/dα','coef'],
+ ['CLmax','coef'],['CDi','coef'],['CD0','coef'],['CL','coef'],['CD','coef'],['AR','coef'],['FM','coef'],['KV','elec'],
+ ['RPM','elec'],['Ah','elec'],['capacity','elec'],['usable','coef'],['pitch','len'],['SM','coef'],['L','force'],
+ ['D','force'],['W','force'],['T','force'],['V','speed'],['S','area'],['I','elec'],['C','elec'],['m','mass'],
+ ['g','const'],['ρ','const'],['π','const'],['η','coef'],['Γ','coef'],['e','coef'],['a','coef'],['b','len'],['c','len'],
+ ['r','len'],['y','len'],['w','len'],['n','const']];
+function colorEq(){
+ var map={},names=EQT.map(function(t){map[t[0]]=t[1];return t[0]}).sort(function(a,b){return b.length-a.length});
+ var re=new RegExp('(^|[^A-Za-z_])('+names.map(function(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}).join('|')+')(?![A-Za-z0-9_])(?!-tail)','g');
+ var n=document.querySelectorAll('.eq');
+ for(var i=0;i<n.length;i++){n[i].innerHTML=esc(n[i].textContent).replace(re,function(m,p,t){return p+'<var class="k-'+map[t]+'">'+t+'</var>'})}
+}
+function fieldHTML(k){var p=SPEC[k];return '<label class="f" title="'+esc(p.h||'')+'"><span class="fl">'+symHTML(k)+esc(p.l)+(p.u?' <small>'+esc(p.u)+'</small>':'')+'</span><input class="k-'+kindOf(k)+'" type="number" inputmode="decimal" id="in-'+k+'" data-k="'+k+'" step="'+p.s+'"></label>'}
+function buildFields(){var n=document.querySelectorAll('[data-fields]');for(var i=0;i<n.length;i++){n[i].innerHTML=n[i].getAttribute('data-fields').split(',').map(fieldHTML).join('')}}
+function buildStats(){var n=document.querySelectorAll('[data-stats]');for(var i=0;i<n.length;i++){n[i].innerHTML=n[i].getAttribute('data-stats').split(';').map(function(s){var a=s.split('|');return '<div class="stat"><span class="sl">'+symHTML(a[0])+esc(a[1])+'</span><span class="sv"><b class="k-'+kindOf(a[0])+'" data-o="'+a[0]+'">–</b>'+(a[2]?' <small>'+esc(a[2])+'</small>':'')+'</span><span class="pill" data-o="'+a[0]+'-s" hidden></span></div>'}).join('')}}
+function syncInputs(){for(var k in SPEC){var el=$('in-'+k);if(el&&document.activeElement!==el)el.value=+(+S[k]).toFixed(4)}}
+function buildPresets(){$('presets').innerHTML=PRESETS.map(function(p,i){return '<button class="btn" type="button" data-preset="'+i+'">'+p[0]+' · '+p[3]+' g</button>'}).join('')}
+function buildParts(){$('parts-body').innerHTML=parts.map(function(p,i){return '<tr><td><input type="text" data-pi="'+i+'" data-pf="n" value="'+esc(p.n)+'" aria-label="Part name"></td><td><input type="number" data-pi="'+i+'" data-pf="m" value="'+esc(p.m)+'" step="1" aria-label="Mass in grams"></td><td><input type="number" data-pi="'+i+'" data-pf="x" value="'+esc(p.x==null?'':p.x)+'" step="1" placeholder="mm" aria-label="Position in mm behind the wing leading edge"></td><td><button type="button" class="x" data-del="'+i+'" aria-label="Remove part">×</button></td></tr>'}).join('')}
+
+function out(k,txt){var el=document.querySelector('[data-o="'+k+'"]');if(el)el.textContent=txt}
+function stat(k,val,state,msg){out(k,val);var p=document.querySelector('[data-o="'+k+'-s"]');if(p){p.textContent=msg||'';p.setAttribute('data-s',state||'');p.hidden=!msg}}
+
+/* ---------- charts ---------- */
+function niceStep(r){var p=Math.pow(10,Math.floor(Math.log10(r)));var n=r/p;return (n<1.5?1:n<3.5?2:n<7.5?5:10)*p}
+function ticks(max){var s=niceStep(max/5),a=[];for(var v=0;v<=max+1e-9;v+=s)a.push(+v.toFixed(6));return a}
+function niceMax(v){var s=niceStep(v/5);return Math.ceil(v/s)*s}
+function chart(id,o){
+ var el=$(id);if(!el||!isFinite(o.ymax)||o.ymax<=0)return;
+ var W=600,H=270,ml=56,mr=16,mt=14,mb=42;
+ var sx=function(x){return ml+x/o.xmax*(W-ml-mr)},sy=function(y){return H-mb-y/o.ymax*(H-mt-mb)};
+ var h='<defs><clipPath id="cp-'+id+'"><rect x="'+ml+'" y="'+mt+'" width="'+(W-ml-mr)+'" height="'+(H-mt-mb)+'"/></clipPath></defs>';
+ ticks(o.ymax).forEach(function(t){h+='<line class="gr" x1="'+ml+'" x2="'+(W-mr)+'" y1="'+sy(t)+'" y2="'+sy(t)+'"/><text class="tk" x="'+(ml-6)+'" y="'+(sy(t)+4)+'" text-anchor="end">'+t+'</text>'});
+ ticks(o.xmax).forEach(function(t){h+='<line class="gr" x1="'+sx(t)+'" x2="'+sx(t)+'" y1="'+mt+'" y2="'+(H-mb)+'"/><text class="tk" x="'+sx(t)+'" y="'+(H-mb+16)+'" text-anchor="middle">'+t+'</text>'});
+ h+='<line class="axl" x1="'+ml+'" x2="'+(W-mr)+'" y1="'+(H-mb)+'" y2="'+(H-mb)+'"/><line class="axl" x1="'+ml+'" x2="'+ml+'" y1="'+mt+'" y2="'+(H-mb)+'"/>';
+ h+='<text class="al" x="'+((ml+W-mr)/2)+'" y="'+(H-6)+'" text-anchor="middle">'+o.xl+'</text>';
+ h+='<text class="al" transform="translate(14 '+((mt+H-mb)/2)+') rotate(-90)" text-anchor="middle">'+o.yl+'</text>';
+ (o.h||[]).forEach(function(l){if(l.y<=o.ymax)h+='<line class="ref" x1="'+ml+'" x2="'+(W-mr)+'" y1="'+sy(l.y)+'" y2="'+sy(l.y)+'"/><text class="rl" x="'+(W-mr-4)+'" y="'+(sy(l.y)-5)+'" text-anchor="end">'+l.t+'</text>'});
+ (o.v||[]).forEach(function(l){if(l.x<=o.xmax)h+='<line class="ref" x1="'+sx(l.x)+'" x2="'+sx(l.x)+'" y1="'+mt+'" y2="'+(H-mb)+'"/><text class="rl" x="'+(sx(l.x)+4)+'" y="'+(mt+12)+'">'+l.t+'</text>'});
+ o.lines.forEach(function(L){if(L.p.length>1)h+='<polyline class="'+L.c+'" clip-path="url(#cp-'+id+')" points="'+L.p.map(function(q){return sx(q[0]).toFixed(1)+','+sy(q[1]).toFixed(1)}).join(' ')+'"/>'});
+ (o.dots||[]).forEach(function(d){if(d.x<=o.xmax&&d.y<=o.ymax)h+='<circle class="dot" cx="'+sx(d.x)+'" cy="'+sy(d.y)+'" r="4.5"/>'});
+ el.setAttribute('viewBox','0 0 '+W+' '+H);el.innerHTML=h;
+}
+
+/* ---------- model ---------- */
+function geo(){
+ var b=Math.max(S.span,1)/1000,c=Math.max(S.chord,1)/1000,A=b*c,W=Math.max(S.mass,1)/1000*G;
+ return {b:b,c:c,A:A,W:W,AR:b/c};
+}
+function perf(V,g){
+ var q=0.5*S.rho*V*V,CL=g.W/(q*g.A),CDi=CL*CL/(Math.PI*S.e*g.AR),CD=S.cd0+CDi;
+ var D=q*g.A*CD,Pa=D*V,Pel=Pa/Math.max(S.etap,0.05);
+ return {q:q,CL:CL,CDi:CDi,CD:CD,D:D,Pa:Pa,Pel:Pel};
+}
+function tailGeo(g){
+ var rad=S.gamma*Math.PI/180,Sh=S.tailA*Math.pow(Math.cos(rad),2),Sv=S.tailA*Math.pow(Math.sin(rad),2);
+ var Adm=g.A*100;
+ var VH=Sh*S.lt/(Adm*S.chord),VV=Sv*S.lt/(Adm*S.span);
+ var panel=S.tailA*10000/(2*Math.max(S.ct,10)),proj=2*panel*Math.cos(rad);
+ return {Sh:Sh,Sv:Sv,VH:VH,VV:VV,panel:panel,proj:proj};
+}
+function npCalc(g,t){
+ var e=S.e,a=2*Math.PI/(1+2/(e*g.AR)),de=2*a/(Math.PI*g.AR);
+ var at=2*Math.PI/(1+2/(e*Math.max(S.tailAR,0.5)));
+ return 0.25+(at/a)*(1-de)*t.VH*0.9;
+}
+
+/* ---------- renderers ---------- */
+function rSummary(g){
+ var loading=S.mass/(g.A*100),vs=Math.sqrt(2*g.W/(S.rho*g.A*S.clmax));
+ var Tt=3*S.thrust,tw=Tt/S.mass,hthr=Math.sqrt(Math.min(1,S.mass/Tt))*100;
+ out('area',fx(g.A*100,1));out('ar',fx(g.AR,1));
+ stat('loading',fx(loading,1),loading<=40?'good':loading<=50?'warn':'bad',loading<=40?'forgiving':loading<=50?'getting fast':'fast');
+ stat('stall',fx(vs,1),vs<=9?'good':vs<=11?'warn':'bad',vs<=9?'slow enough':vs<=11?'fast':'very fast');
+ stat('tw',fx(tw,2),tw>=2.5?'good':tw>=2?'warn':'bad',tw>=2.5?'comfortable':tw>=2?'marginal':'too low');
+ stat('hthr',fx(hthr,0),hthr<=60?'good':hthr<=75?'warn':'bad',hthr<=60?'good margin':hthr<=75?'little margin':'no margin');
+ return {vs:vs,tw:tw,Tt:Tt};
+}
+function rLift(g,vs){
+ var L=function(V,cl){return 0.5*S.rho*V*V*g.A*cl/G*1000};
+ var p1=[],p2=[];for(var V=0;V<=20.001;V+=0.5){p1.push([V,L(V,S.clmax)]);p2.push([V,L(V,S.cltest)])}
+ out('liftg',fx(L(S.vtest,S.cltest),0));
+ var clreq=g.W/(0.5*S.rho*S.vtest*S.vtest*g.A);
+ stat('clreq',fx(clreq,2),clreq<=S.clmax*0.8?'good':clreq<=S.clmax?'warn':'bad',clreq<=S.clmax*0.8?'ok':clreq<=S.clmax?'near stall':'stalled');
+ out('vlevel',fx(Math.sqrt(2*g.W/(S.rho*g.A*Math.max(S.cltest,0.01))),1));
+ chart('ch-lift',{xmax:20,ymax:niceMax(S.mass*2.5),xl:'Airspeed (m/s)',yl:'Lift (g)',
+  h:[{y:S.mass,t:'weight '+fx(S.mass,0)+' g'}],v:[{x:vs,t:'stall '+fx(vs,1)}],
+  lines:[{c:'ln-a',p:p1},{c:'ln-b',p:p2}]});
+}
+function rDrag(g,vs){
+ var p=perf(S.vcruise,g),I=p.Pel/(S.cells*3.7);
+ out('clc',fx(p.CL,2));out('cdi',fx(p.CDi,3));out('cdt',fx(p.CD,3));
+ stat('ld',fx(p.CL/p.CD,1),p.CL/p.CD>=5?'good':p.CL/p.CD>=3.5?'warn':'bad',p.CL/p.CD>=5?'good':p.CL/p.CD>=3.5?'draggy':'very draggy');
+ out('dragg',fx(p.D/G*1000,0));out('pael',fx(p.Pa,0));out('pel',fx(p.Pel,0));out('icr',fx(I,1));
+ var pts=[],mx=0;for(var V=Math.max(vs,3);V<=22.001;V+=0.5){var q=perf(V,g);if(q.CL<=S.clmax*1.001){pts.push([V,q.Pel]);mx=Math.max(mx,q.Pel)}}
+ var dots=[];if(p.CL<=S.clmax*1.001)dots.push({x:S.vcruise,y:p.Pel});
+ chart('ch-power',{xmax:22,ymax:niceMax(Math.max(mx,10)*1.05),xl:'Airspeed (m/s)',yl:'Electrical power (W)',lines:[{c:'ln-a',p:pts}],dots:dots});
+}
+function rThrust(g,m){
+ var Tt=m.Tt,r=S.propd*25.4/2/1000,Ad=3*Math.PI*r*r;
+ var Tn=g.W,Pid=Math.pow(Tn,1.5)/Math.sqrt(2*S.rho*Ad),Ph=Pid/Math.max(S.fm,0.1);
+ var Ih=Ph/(S.cells*3.7),th=60*(S.mah/1000)*(S.usable/100)/Ih;
+ var rpm=S.kv*S.cells*3.7*0.85,ps=rpm*S.pitch*0.0254/60;
+ out('ttot',fx(Tt,0));
+ stat('tw2',fx(m.tw,2),m.tw>=2.5?'good':m.tw>=2?'warn':'bad',m.tw>=2.5?'comfortable':m.tw>=2?'marginal':'too low');
+ var ht=Math.sqrt(Math.min(1,S.mass/Tt))*100;
+ stat('hthr2',fx(ht,0),ht<=60?'good':ht<=75?'warn':'bad',ht<=60?'good margin':ht<=75?'little margin':'no margin');
+ out('dl',fx(g.W/Ad,0));out('ph',fx(Ph,0));out('gw',fx(S.mass/Ph,1));out('ih',fx(Ih,1));
+ stat('th',fx(th,1),th>=6?'good':th>=4?'warn':'bad',th>=6?'':th>=4?'short':'very short');
+ stat('ps',fx(ps,0),ps>=1.5*S.vcruise?'good':'warn',ps>=1.5*S.vcruise?'enough for cruise':'low for cruise');
+ out('t4',fx(S.thrust*Math.pow(4/Math.max(S.cells,1),2),0));
+}
+function partsCalc(){
+ var M=0,Mp=0,Mx=0;
+ parts.forEach(function(p){var m=parseFloat(p.m)||0;M+=m;var x=parseFloat(p.x);if(p.x!==''&&p.x!=null&&isFinite(x)){Mp+=m;Mx+=m*x}});
+ return {M:M,Mp:Mp,xcg:Mp>0?Mx/Mp:NaN};
+}
+function rCG(g){
+ var t=tailGeo(g),hn=npCalc(g,t),cg=S.cgpct/100,sm=hn-cg;
+ stat('hnp',fx(hn*100,0),'', '');
+ stat('sm',fx(sm*100,0),sm<0?'bad':sm<0.05?'warn':sm<=0.15?'good':'warn',sm<0?'unstable':sm<0.05?'twitchy':sm<=0.15?'in target':'nose-heavy');
+ stat('vh',fx(t.VH,2),t.VH<0.3?'bad':t.VH<0.4?'warn':t.VH<=0.7?'good':'warn',t.VH<0.3?'tail too small':t.VH<0.4?'on the small side':t.VH<=0.7?'good':'large');
+ stat('vv',fx(t.VV,3),t.VV<0.02?'warn':'good',t.VV<0.02?'low':'ok');
+ out('sh',fx(t.Sh,1));
+ var pc=function(v){return Math.max(0,Math.min(100,v*100))+'%'};
+ $('cb-ac').style.left='25%';$('cb-np').style.left=pc(hn);$('cb-cg').style.left=pc(cg);
+ var z0=Math.max(0,hn-0.15),z1=Math.min(1,Math.max(0,hn-0.05));
+ $('cb-zone').style.left=pc(z0);$('cb-zone').style.width=Math.max(0,(z1-z0)*100)+'%';
+ var pcres=partsCalc();
+ out('ptot',fx(pcres.M,0));
+ stat('pplaced',fx(pcres.M>0?pcres.Mp/pcres.M*100:0,0),pcres.M>0&&pcres.Mp/pcres.M>=0.99?'good':'warn',pcres.M>0&&pcres.Mp/pcres.M>=0.99?'complete':'positions missing');
+ out('pcg',fx(pcres.xcg,0));out('pcgp',fx(pcres.xcg/S.chord*100,1));
+ return {t:t,hn:hn};
+}
+function rLayout(g,tl){
+ var xcg=S.cgpct/100*S.chord,r=S.propd*25.4/2,df=Math.max(S.dfront,1),dr=Math.max(S.drear,1);
+ var Tr=S.mass*df/(df+dr),Tf=S.mass*dr/(df+dr)/2;
+ var thr=Math.sqrt(Math.max(Tr,Tf)/Math.max(S.thrust,1))*100;
+ var gap1=(df-xcg)-r,gap2=2*S.ny-2*r,gap3=S.ny-r-S.fusw/2;
+ var yF=xcg-df,yR=xcg+dr,tY=xcg+S.lt-0.25*S.ct,gap4=tY-(yR+r);
+ var gs=function(v,lim){return v>=lim?'good':v>=0?'warn':'bad'},gm=function(v,lim){return v>=lim?'ok':v>=0?'tight':'overlap'};
+ out('trear',fx(Tr,0));out('tfront',fx(Tf,0));out('fr',fx(Tr/Tf,2));
+ stat('thr3',fx(thr,0),thr<=60?'good':thr<=75?'warn':'bad',thr<=60?'good margin':thr<=75?'little margin':'no margin');
+ stat('g1',fx(gap1,0),gs(gap1,20),gm(gap1,20));stat('g2',fx(gap2,0),gs(gap2,10),gm(gap2,10));
+ stat('g3',fx(gap3,0),gs(gap3,10),gm(gap3,10));
+ stat('g4',fx(gap4,0),gap4>=0?'good':'warn',gap4>=0?'clear in plan view':'overlaps in plan view');
+ out('len',fx(tY+S.ct-(yF-r),0));
+ topView(xcg,r,yF,yR,tY,tl);
+}
+function topView(xcg,r,yF,yR,tY,tl){
+ var pj=tl.proj,half=Math.max(S.span/2,S.ny+r,pj/2)+30;
+ var y0=Math.min(-40,yF-r)-28,y1=Math.max(S.chord,yR+r,tY+S.ct)+34,fs=half*0.032;
+ var h='';
+ h+='<rect class="sv-fus" x="'+(-S.fusw/2)+'" y="-40" width="'+S.fusw+'" height="'+(tY+S.ct+40)+'" rx="'+(S.fusw/2)+'"/>';
+ h+='<rect class="sv-wing" x="'+(-S.span/2)+'" y="0" width="'+S.span+'" height="'+S.chord+'"/>';
+ h+='<rect class="sv-tail" x="'+(-pj/2)+'" y="'+tY+'" width="'+pj+'" height="'+S.ct+'"/>';
+ h+='<line class="sv-line" x1="0" y1="'+yF+'" x2="0" y2="'+yR+'"/>';
+ [-S.ny,S.ny].forEach(function(x){h+='<circle class="sv-prop" cx="'+x+'" cy="'+yF+'" r="'+r+'"/><line class="sv-line" x1="'+(x-r)+'" y1="'+yF+'" x2="'+(x+r)+'" y2="'+yF+'"/>'});
+ h+='<circle class="sv-prop" cx="0" cy="'+yR+'" r="'+r+'"/>';
+ h+='<circle class="sv-cg" cx="0" cy="'+xcg+'" r="'+(fs*0.6)+'"/><line class="sv-line" x1="'+(-fs)+'" y1="'+xcg+'" x2="'+fs+'" y2="'+xcg+'"/>';
+ h+='<text class="sv-t" x="'+(S.fusw/2+fs*0.7)+'" y="'+(xcg+fs*0.4)+'" font-size="'+fs+'">CG</text>';
+ h+='<text class="sv-t" x="'+(S.ny+r+fs*0.5)+'" y="'+(yF+fs*0.35)+'" font-size="'+fs+'">front axis</text>';
+ h+='<text class="sv-t" x="'+(r+fs*0.5)+'" y="'+(yR+fs*0.35)+'" font-size="'+fs+'">rear motor</text>';
+ h+='<text class="sv-t" x="'+(pj/2+fs*0.5)+'" y="'+(tY+S.ct/2+fs*0.35)+'" font-size="'+fs+'">tail</text>';
+ h+='<text class="sv-t" x="'+(-S.span/2+fs*0.5)+'" y="'+(S.chord/2+fs*0.35)+'" font-size="'+fs+'">wing</text>';
+ h+='<line class="axl" x1="'+(-half+10)+'" y1="'+(y1-12)+'" x2="'+(-half+110)+'" y2="'+(y1-12)+'"/><text class="sv-t" x="'+(-half+10)+'" y="'+(y1-17)+'" font-size="'+fs+'">100 mm</text>';
+ var el=$('topview');el.setAttribute('viewBox',(-half)+' '+y0+' '+(2*half)+' '+(y1-y0));el.innerHTML=h;
+}
+function renderAll(){
+ var g=geo(),m=rSummary(g);
+ rLift(g,m.vs);rDrag(g,m.vs);rThrust(g,m);
+ var c=rCG(g);rLayout(g,c.t);
+}
+
+/* ---------- glossary + rules ---------- */
+var TERMS=[
+['Span (b)','Geometry','Tip-to-tip length of the wing.'],
+['Chord (c)','Geometry','Distance from the leading edge to the trailing edge, measured along the airflow.'],
+['Planform area (S)','Geometry','Wing area seen from above. For a rectangular wing, span times chord.'],
+['Aspect ratio (AR)','Geometry','Span squared divided by area. High means long and thin, low means short and wide.'],
+['Mean aerodynamic chord (MAC)','Geometry','The average chord used as the reference length for CG and static margin. Equal to the chord on a rectangular wing.'],
+['Leading edge (LE)','Geometry','The front edge of the wing. Round it on a foam wing.'],
+['Trailing edge (TE)','Geometry','The rear edge of the wing, where the flow leaves. Keep it thin.'],
+['Airfoil','Geometry','The cross-section shape of the wing.'],
+['Camber','Geometry','Curvature of the airfoil. A cambered wing makes lift at zero angle of attack and gives a higher CLmax than a flat plate.'],
+['Dihedral','Geometry','The upward angle of the wings seen from the front. It adds roll stability. A V-tail uses the same word for its panel angle.'],
+['Nacelle','Geometry','The pod that holds a motor. On the tiltrotor, the front nacelles rotate.'],
+['Boom','Geometry','The tube connecting the wing area to the tail.'],
+['Lift (L)','Aerodynamics','The force that holds the aircraft up, perpendicular to the airflow.'],
+['Drag (D)','Aerodynamics','The force opposing motion through the air.'],
+['Induced drag','Aerodynamics','Drag that comes from making lift. It is worst at low speed and on short wings.'],
+['Parasitic drag','Aerodynamics','Drag from the shape of the airframe: skin, nacelles, gaps, joints. It grows with speed squared.'],
+['Lift coefficient (CL)','Aerodynamics','A number for how hard the wing is working. It grows with angle of attack until the wing stalls.'],
+['Drag coefficient (CD)','Aerodynamics','The dimensionless version of drag. Total CD is parasitic plus induced.'],
+['L/D','Aerodynamics','Lift divided by drag. A measure of aerodynamic efficiency.'],
+['Angle of attack (AoA)','Aerodynamics','Angle between the wing chord and the oncoming air.'],
+['Stall','Aerodynamics','The airflow over the wing separates and lift drops. It happens at too high an angle of attack, not at a particular speed.'],
+['Dynamic pressure (q)','Aerodynamics','Half density times speed squared. The "force per area" the moving air carries.'],
+['Wing loading','Aerodynamics','Aircraft mass divided by wing area.'],
+['Reynolds number (Re)','Aerodynamics','A measure of how viscous effects scale with size and speed. Small, slow models fly at low Re, where thin sharp-edged airfoils work well and thick ones stall early.'],
+['Downwash','Aerodynamics','Air pushed down behind a wing. It reduces the angle of attack the tail sees.'],
+['Center of gravity (CG)','Stability','The balance point of the whole aircraft.'],
+['Aerodynamic center (AC)','Stability','The point on a wing where the pitching moment does not change with angle of attack. About 25% of chord.'],
+['Neutral point (NP)','Stability','The aircraft-wide version of the aerodynamic center, including the tail. The CG must sit ahead of it.'],
+['Static margin','Stability','The distance from CG to neutral point as a fraction of the chord. Positive is stable.'],
+['Tail volume coefficient','Stability','A measure of how effective a tail is: area times lever arm, relative to the wing.'],
+['Pitch, roll, yaw','Stability','Nose up/down, one wing up/down, and nose left/right.'],
+['Moment','Stability','A turning effect: force times the distance from the pivot.'],
+['Trim','Stability','Setting the controls so the aircraft flies straight with no stick input.'],
+['Aileron','Stability','A wing control surface for roll.'],
+['Ruddervator','Stability','A V-tail surface that does the job of both rudder and elevator. The flight controller mixes the two.'],
+['Thrust-to-weight','Propulsion','Total thrust divided by weight. Needs to be above 2 for a VTOL to hover with control.'],
+['Static thrust','Propulsion','Thrust with the aircraft stationary. Measure it on a scale.'],
+['Disc loading','Propulsion','Weight divided by total rotor disc area. Lower is more efficient in hover.'],
+['Figure of merit (FM)','Propulsion','How close a rotor comes to the ideal hover power. 1 would be perfect.'],
+['Hover','Propulsion','Holding position with the rotors alone.'],
+['Transition','Propulsion','The change between hover and wing-borne flight, as the nacelles tilt.'],
+['Tilt axis','Propulsion','The line a nacelle rotates about.'],
+['Prop wash (slipstream)','Propulsion','Air accelerated by the prop. In hover it blows down over the wing and costs some lift (called download).'],
+['Pitch speed','Propulsion','Prop pitch times RPM. The speed at which the prop stops producing thrust.'],
+['KV','Electrical','Motor speed per volt with no load. A 2300KV motor spins at about 2300 rpm per volt unloaded.'],
+['S (cell count)','Electrical','Number of LiPo cells in series. Each is 3.7 V nominal, 4.2 V full.'],
+['mAh','Electrical','Battery capacity. 2200 mAh can supply 2.2 A for one hour.'],
+['C rating','Electrical','Maximum continuous discharge as a multiple of capacity. 50C on 2.2 Ah is 110 A.'],
+['ESC','Electrical','Electronic speed controller. It drives the motor from the flight controller signal.'],
+['BEC','Electrical','Battery eliminator circuit. It steps the battery down to 5 V for servos and the receiver.'],
+['Voltage sag','Electrical','The battery voltage dropping under load. Big at high current and in cold or worn packs.'],
+['PWM','Electrical','The pulse signal that tells servos and ESCs what position or speed to hold.'],
+['Flight controller (FC)','ArduPilot','The board that reads sensors and receiver input and drives motors and servos.'],
+['IMU','ArduPilot','Gyro and accelerometer. Gives the aircraft its sense of rotation and tilt.'],
+['PID','ArduPilot','The control loop (proportional, integral, derivative) that turns attitude error into corrections.'],
+['QuadPlane','ArduPilot','ArduPilot Plane\'s name for a VTOL aircraft with a fixed wing. Tiltrotors are set up this way.'],
+['QSTABILIZE / QHOVER / QLOITER','ArduPilot','Rotor-borne flight modes, from manual attitude control to automatic position hold.'],
+['FBWA','ArduPilot','Fly-by-wire A. A stabilised wing-borne mode where the stick commands an angle.'],
+['RTL','ArduPilot','Return to launch. The aircraft flies home by itself. Needs GPS.'],
+['Failsafe','ArduPilot','What the aircraft does when the radio link drops or the battery is low.'],
+['SITL','ArduPilot','Software in the loop: the real autopilot code running against a simulated aircraft.']
+];
+var RULES=[
+['Wing loading (this build)','under 40 g/dm² forgiving, 40 to 50 workable, over 50 fast','Sets stall speed and how hard the transition is.'],
+['Stall speed','9 m/s or less','Lower means an easier, shorter transition.'],
+['Static margin','5 to 15% of the chord','Below 5% is twitchy, below 0 is unstable.'],
+['CG position (wing and tail)','25 to 33% of the chord','Usually puts the margin in range. Check against your neutral point.'],
+['Tail volume V_H','0.4 to 0.7','Smaller tails need more speed to be effective.'],
+['Tail volume V_V','0.02 to 0.05 or more','A V-tail tends to give extra, which is fine.'],
+['Thrust-to-weight','2 minimum, 2.5 or more comfortable','Hover control needs thrust in reserve.'],
+['Hover throttle','60% or less','Above 75% you have no margin for gusts or corrections.'],
+['Prop pitch speed','at least 1.5 times cruise speed','Otherwise the prop cannot pull you forward.'],
+['ESC current rating','at least 1.3 times the maximum motor current','Leaves margin for heat and bursts.'],
+['Battery C rating','max current ÷ capacity in Ah, plus 30%','Prevents sag and overheating.'],
+['Usable battery','about 80%','Protects the pack.'],
+['Prop to wing gap (hover)','20 mm or more','Props that touch the wing lose thrust and can strike it.'],
+['Prop to prop and prop to body','10 mm or more','Prevents strikes when the nacelles tilt.'],
+['Hover moment balance','rear arm = 2 × front arm for equal thrust','Keeps all three motors at similar throttle.']
+];
+var gcat='All',gq='';
+function renderTerms(){
+ var cats=['All'].concat(TERMS.map(function(t){return t[1]}).filter(function(c,i,a){return a.indexOf(c)===i}));
+ $('termcats').innerHTML=cats.map(function(c){return '<button type="button" data-cat="'+esc(c)+'" aria-pressed="'+(c===gcat)+'">'+esc(c)+'</button>'}).join('');
+ var q=gq.trim().toLowerCase();
+ var list=TERMS.filter(function(t){return (gcat==='All'||t[1]===gcat)&&(!q||(t[0]+' '+t[2]).toLowerCase().indexOf(q)>=0)});
+ $('terms').innerHTML=list.length?list.map(function(t){return '<div class="term"><h4>'+esc(t[0])+'<span class="cat">'+esc(t[1])+'</span></h4><p>'+esc(t[2])+'</p></div>'}).join(''):'<p class="note">No terms match. Try a shorter search.</p>';
+}
+function renderRules(){$('rules').innerHTML=RULES.map(function(r){return '<tr><td>'+esc(r[0])+'</td><td>'+esc(r[1])+'</td><td>'+esc(r[2])+'</td></tr>'}).join('')}
+
+/* ---------- events ---------- */
+document.addEventListener('input',function(e){
+ var t=e.target;
+ if(t.id==='termq'){gq=t.value;renderTerms();return}
+ if(t.dataset&&t.dataset.k){var v=parseFloat(t.value);if(isFinite(v)){S[t.dataset.k]=v;save();renderAll()}return}
+ if(t.dataset&&t.dataset.pi!==undefined){var p=parts[+t.dataset.pi],f=t.dataset.pf;if(p){p[f]=t.value;save();renderAll()}}
+});
+document.addEventListener('click',function(e){
+ var t=e.target.closest('button');if(!t)return;
+ if(t.dataset.preset!==undefined){var p=PRESETS[+t.dataset.preset];S.span=p[1];S.chord=p[2];S.mass=p[3];syncInputs();save();renderAll();return}
+ if(t.dataset.del!==undefined){parts.splice(+t.dataset.del,1);buildParts();save();renderAll();return}
+ if(t.dataset.cat!==undefined){gcat=t.dataset.cat;renderTerms();return}
+ if(t.id==='add-part'){parts.push({n:'New part',m:0,x:''});buildParts();save();renderAll();return}
+ if(t.id==='reset-parts'){parts=JSON.parse(JSON.stringify(DEFPARTS));buildParts();save();renderAll();return}
+ if(t.id==='use-cg'){var c=partsCalc();if(isFinite(c.xcg)){S.cgpct=Math.round(c.xcg/S.chord*1000)/10;syncInputs();save();renderAll()}return}
+ if(t.id==='use-mass'){var c2=partsCalc();if(c2.M>0){S.mass=Math.round(c2.M);syncInputs();save();renderAll()}return}
+});
+
+colorEq();buildFields();buildStats();buildPresets();buildParts();renderTerms();renderRules();syncInputs();renderAll();
+})();
+</script>
