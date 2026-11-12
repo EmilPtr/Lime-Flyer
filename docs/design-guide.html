@@ -152,7 +152,7 @@ var{font-style:normal;font-family:var(--mono);font-weight:500}
 <header>
   <p class="kicker">Lime Flyer · design notes</p>
   <h1>Plane design, from the equations up</h1>
-  <p class="lead">Every equation and term you will use for the Lime Flyer, a sub-250 g elevon flying wing, each with a live calculator. The numbers start from this project (600 × 180 mm foam wing, 2S, a 1306-class motor). Change them and everything below follows. Your inputs are remembered in this browser.</p>
+  <p class="lead">Every equation and term you will use for the Lime Flyer, a sub-250 g conventional micro plane, each with a live calculator. The numbers start from this project (700 × 130 mm foam wing, 2S, a 1306-class motor). Change them and everything below follows. Your inputs are remembered in this browser.</p>
   <nav class="chips" aria-label="Sections">
     <a href="#sec-aircraft">Your aircraft</a>
     <a href="#sec-lift">Lift &amp; stall</a>
@@ -230,11 +230,11 @@ V = √( 2W / (ρ · S · CL) )</pre>
   <div class="cards">
     <div class="card"><h3>Aspect ratio</h3>
       <pre class="eq">AR = b² / S   (= b / c if rectangular)</pre>
-      <p>Long and thin (AR 8 to 10) is efficient. Short and wide (AR 3 to 4) is stiff and stalls gently but pays in induced drag. A small flying wing sits around AR 3 to 5. It trades some efficiency for a stiff, crash-tolerant wing.</p></div>
+      <p>Long and thin (AR 8 to 10) is efficient. Short and wide (AR 3 to 4) is stiff and stalls gently but pays in induced drag. A small foam trainer sits around AR 5 to 7. Longer is more efficient, but shorter is stiffer and survives crashes better.</p></div>
     <div class="card"><h3>Drag coefficient</h3>
       <pre class="eq">CDi = CL² / (π · e · AR)
 CD  = CD0 + CDi</pre>
-      <p><var class="k-coef">CDi</var> is induced drag, the cost of making lift. <var class="k-coef">CD0</var> is parasitic drag from skin, the motor pod, gaps and exposed servos. <var class="k-coef">e</var> (0.6 to 0.9) says how close the wing is to ideal.</p></div>
+      <p><var class="k-coef">CDi</var> is induced drag, the cost of making lift. <var class="k-coef">CD0</var> is parasitic drag from skin, the fuselage, tail, gaps and exposed servos. <var class="k-coef">e</var> (0.6 to 0.9) says how close the wing is to ideal.</p></div>
     <div class="card"><h3>Drag force and L/D</h3>
       <pre class="eq">D   = ½ · ρ · V² · S · CD
 L/D = CL / CD</pre>
@@ -288,37 +288,36 @@ V_pitch = RPM · pitch</pre>
 
 <section id="sec-cg">
   <h2>Center of gravity and stability</h2>
-  <p class="lead">A flying wing has no tail, so the wing itself must be pitch-stable. It is stable when the CG sits ahead of the neutral point. The gap between them is the static margin, and sweep and reflex are what keep it trimmed.</p>
+  <p class="lead">A plane is pitch-stable when the CG sits ahead of the neutral point, the spot where the whole aircraft's lift effectively acts. The gap between them is the static margin. The tail is what moves the neutral point aft.</p>
   <div class="cards">
     <div class="card"><h3>Center of gravity</h3>
       <pre class="eq">x_cg = Σ( m_i · x_i ) / Σ m_i</pre>
-      <p>The mass-weighted average position of every part, measured from one fixed reference (here the root leading edge, positive aft). Moving a heavy part far from the CG shifts it a lot, so trim with the battery.</p></div>
+      <p>The mass-weighted average position of every part, measured from one fixed reference (here the wing leading edge, positive aft). Moving a heavy part far from the CG shifts it a lot, so trim with the battery.</p></div>
     <div class="card"><h3>Static margin</h3>
-      <pre class="eq">SM = (x_np − x_cg) / MAC</pre>
-      <p>Distance between neutral point and CG, as a fraction of the mean aerodynamic chord. Negative is unstable. 5 to 15% is the usual target. A tailless wing is less forgiving than a plane with a tail, so lean toward the nose-heavy side for a first flight.</p></div>
-    <div class="card"><h3>MAC, sweep and neutral point</h3>
-      <pre class="eq">λ    = c_tip / c_root
-c_root = 2c / (1 + λ)
-MAC  = ⅔ · c_root · (1 + λ + λ²) / (1 + λ)
-y_mac = b/6 · (1 + 2λ) / (1 + λ)
-x_np = y_mac · tan(Λ) + 0.25 · MAC</pre>
-      <p>On a swept wing the mean chord sits farther back by <code>y_mac · tan Λ</code>. With no tail, the neutral point is the wing's aerodynamic center, about 25% of the MAC. This is a hand estimate that ignores the body and the airfoil. Treat it as a starting point and confirm with a glide test.</p></div>
-    <div class="card"><h3>Reflex and trim</h3>
-      <p>Most flat or thin airfoils pitch the nose down. A tailless wing cancels that with <b>reflex</b>: both elevons raised a few millimetres at the trailing edge, so they act as a small tail. Sweep adds stability too, especially with washout (the tips at a lower angle than the root).</p>
-      <p>Set the elevon neutral with a little up trim, balance on the CG mark, and glide-test over tall grass before powered flight.</p></div>
+      <pre class="eq">SM = (x_np − x_cg) / c</pre>
+      <p>Distance between neutral point and CG, as a fraction of the chord. Negative is unstable. 5 to 15% is the usual target. Too large and it gets nose-heavy.</p></div>
+    <div class="card"><h3>Tail volume</h3>
+      <pre class="eq">V_H = S_h · l_t / (S · c)
+V_V = S_v · l_t / (S · b)</pre>
+      <p>Tail area times its lever arm, relative to the wing. <var class="k-area">S_h</var> is the stabilizer (with elevator), <var class="k-area">S_v</var> the fin. Bigger or farther tail means more stability.</p></div>
+    <div class="card"><h3>Neutral point (rough)</h3>
+      <pre class="eq">a    = 2π / (1 + 2/(e·AR))
+dε/dα = 2a / (π · AR)
+h_np = 0.25 + (a_t/a)(1 − dε/dα)·V_H·0.9</pre>
+      <p>A bare wing's neutral point is at 25% chord. The tail pushes it aft by an amount set by tail volume, less the wing's downwash on the tail. This is a hand estimate. Check it with a glide test.</p></div>
   </div>
   <div class="calc">
     <div>
-      <div class="fields" data-fields="sweep,taper,cgmm"></div>
+      <div class="fields" data-fields="cgpct,stabA,finA,lt,tailAR"></div>
     </div>
     <div class="right">
-      <div class="stats" data-stats="mac|Mean aerodynamic chord|mm;xnp|Neutral point|mm aft of root LE;cgp|CG|% of MAC;sm|Static margin|% of MAC"></div>
+      <div class="stats" data-stats="hnp|Neutral point|% chord;sm|Static margin|% chord;vh|Tail volume V_H|;vv|Tail volume V_V|"></div>
       <div>
         <div class="chordbar" id="chordbar" aria-hidden="true">
           <div class="zone" id="cb-zone"></div>
           <div class="mk np" id="cb-np"></div>
           <div class="mk" id="cb-cg"></div>
-          <div class="ends"><span>MAC leading edge</span><span>MAC trailing edge</span></div>
+          <div class="ends"><span>leading edge</span><span>trailing edge</span></div>
         </div>
         <div class="legend" style="margin-top:26px">
           <span><i style="background:var(--accent)"></i>CG</span>
@@ -330,7 +329,7 @@ x_np = y_mac · tan(Λ) + 0.25 · MAC</pre>
   </div>
 
   <h3 style="margin:26px 0 8px">CG worksheet</h3>
-  <p class="note" style="margin-bottom:10px">Measure each part's position in mm behind the root leading edge (negative means ahead of it) and enter it. Parts without a position count toward the weight but not the CG. Starting masses come from the BOM.</p>
+  <p class="note" style="margin-bottom:10px">Measure each part's position in mm behind the wing leading edge (negative means ahead of it) and enter it. Parts without a position count toward the weight but not the CG. Starting masses come from the BOM.</p>
   <div class="tblwrap"><table>
     <thead><tr><th>Part</th><th style="width:110px">Mass (g)</th><th style="width:150px">Position (mm)</th><th style="width:44px"></th></tr></thead>
     <tbody id="parts-body"></tbody>
@@ -341,30 +340,30 @@ x_np = y_mac · tan(Λ) + 0.25 · MAC</pre>
     <button class="btn" type="button" id="use-mass">Use this total as aircraft mass</button>
     <button class="btn" type="button" id="reset-parts">Reset table</button>
   </div>
-  <div class="stats" data-stats="ptot|Table total|g;pplaced|Parts placed|%;pcg|Computed CG|mm aft of root LE;pcgp|Computed CG|% of MAC"></div>
+  <div class="stats" data-stats="ptot|Table total|g;pplaced|Parts placed|%;pcg|Computed CG|mm aft of LE;pcgp|Computed CG|% chord"></div>
 </section>
 
 <section id="sec-ctrl">
   <h2>Control surfaces and radio setup</h2>
-  <p class="lead">An elevon is one surface doing the jobs of an aileron and an elevator. The transmitter mixes your two sticks into the left and right elevon, so the receiver only sees two servo signals and a throttle.</p>
+  <p class="lead">Three control surfaces plus the throttle fly a conventional plane. The FS-i6 sends each stick straight to its own channel, so there is nothing to mix.</p>
   <div class="cards">
     <div class="card"><h3>What each input does</h3>
-      <p><b>Roll:</b> the two elevons move opposite ways.</p>
-      <p><b>Pitch:</b> both elevons move the same way, up for nose up.</p>
-      <p><b>Yaw:</b> there is no rudder. Banking and the swept wing turn the nose for you.</p>
+      <p><b>Roll:</b> the two ailerons move opposite ways.</p>
+      <p><b>Pitch:</b> the elevator on the stabilizer. Up elevator pitches the nose up.</p>
+      <p><b>Yaw:</b> a rudder on the fin, if you fit one. Without it, bank to turn.</p>
       <p><b>Speed:</b> throttle on the single motor.</p></div>
     <div class="card"><h3>Radio setup</h3>
-      <p><b>Mixing:</b> set the aircraft type to an elevon (delta) wing in the FS-i6 menu. Check the exact menu name on your firmware.</p>
-      <p><b>Directions:</b> check with the props off. Stick right should raise the right elevon and drop the left one. Stick back should raise both.</p>
+      <p><b>Ailerons:</b> plug both servos into one channel with a Y-lead. Mount them mirror-image so they move opposite ways, or reverse one with a servo reverser.</p>
+      <p><b>Directions:</b> check with the props off. Stick right should raise the right aileron and drop the left. Stick back should raise the elevator.</p>
       <p><b>Throws:</b> start small and add rates only after the first glide.</p></div>
     <div class="card"><h3>Before launch</h3>
       <p><b>Range check:</b> walk the transmitter away with the props off.</p>
-      <p><b>Failsafe:</b> set throttle to cut and elevons to neutral if the link drops.</p>
+      <p><b>Failsafe:</b> set throttle to cut and controls to neutral if the link drops.</p>
       <p><b>Balance:</b> weigh and balance on the CG mark with the battery installed.</p></div>
   </div>
   <ol class="flow">
     <li><b>1. Glide test</b>No motor power. Throw the plane level over soft ground and watch the glide.</li>
-    <li><b>2. Trim</b>Fix nose-up or nose-down tendencies with the elevon trim or the battery position.</li>
+    <li><b>2. Trim</b>Fix nose-up or nose-down tendencies with the elevator trim or the battery position.</li>
     <li><b>3. Powered launch</b>Hand launch into the wind at about half throttle, level or a little nose-up.</li>
     <li><b>4. Cruise and land</b>Fly at the efficient speed from the Drag section, then glide in with the throttle off.</li>
   </ol>
@@ -407,7 +406,7 @@ var SPEC={
  mah:{l:'Battery capacity',u:'mAh',s:50},
  propd:{l:'Prop diameter',u:'in',s:0.5},
  rho:{l:'Air density',u:'kg/m³',s:0.01,h:'1.225 at sea level and 15 C. Cold air is denser.'},
- clmax:{l:'Max lift coefficient',u:'CLmax',s:0.05,h:'Foam flying wing with a reflex airfoil: about 0.6 to 0.9'},
+ clmax:{l:'Max lift coefficient',u:'CLmax',s:0.05,h:'Foam wing with a rounded nose and some camber: about 0.8 to 1.1'},
  vtest:{l:'Airspeed',u:'m/s',s:0.5},
  cltest:{l:'Lift coefficient',u:'CL',s:0.05},
  vcruise:{l:'Cruise speed',u:'m/s',s:0.5},
@@ -417,18 +416,20 @@ var SPEC={
  usable:{l:'Usable battery',u:'%',s:5},
  kv:{l:'Motor KV',u:'rpm/V',s:100},
  pitch:{l:'Prop pitch',u:'in',s:0.1},
- sweep:{l:'Leading-edge sweep Λ',u:'deg',s:1,h:'About 15 to 30 deg for a small tailless wing'},
- taper:{l:'Taper ratio λ',u:'tip/root',s:0.05,h:'Tip chord divided by root chord. 1 = rectangular, 0.5 to 0.7 typical'},
- cgmm:{l:'CG position',u:'mm',s:1,h:'Measured aft of the root leading edge'}
+ cgpct:{l:'CG position',u:'% chord',s:0.5,h:'Measured from the wing leading edge'},
+ stabA:{l:'Stabilizer area (with elevator)',u:'dm²',s:0.1},
+ finA:{l:'Fin area',u:'dm²',s:0.1},
+ lt:{l:'CG to tail quarter-chord',u:'mm',s:10},
+ tailAR:{l:'Stabilizer aspect ratio',u:'',s:0.1,h:'Rough estimate'}
 };
-var DEF={span:600,chord:180,mass:140,thrust:280,cells:2,mah:650,propd:5,rho:1.225,clmax:0.8,
+var DEF={span:700,chord:130,mass:160,thrust:320,cells:2,mah:650,propd:5,rho:1.225,clmax:0.9,
  vtest:8,cltest:0.4,vcruise:10,cd0:0.08,e:0.7,etap:0.4,usable:80,kv:3000,pitch:3,
- sweep:20,taper:0.6,cgmm:78};
+ cgpct:33,stabA:1.6,finA:0.8,lt:400,tailAR:3};
 var DEFPARTS=[
- {n:'Motor',m:12,x:''},{n:'ESC',m:6,x:''},{n:'Prop',m:3,x:''},{n:'2 elevon servos',m:8,x:''},
- {n:'Receiver',m:15,x:''},{n:'Battery 2S 650',m:40,x:''},{n:'Foam wing',m:35,x:''},
- {n:'Carbon rod spars',m:5,x:''},{n:'Wiring and connectors',m:10,x:''},{n:'Printed motor mount and tray',m:7,x:''}];
-var PRESETS=[['600 × 180',600,180,140],['500 × 160',500,160,105],['700 × 200',700,200,170],['450 × 150',450,150,90]];
+ {n:'Motor',m:12,x:''},{n:'ESC',m:6,x:''},{n:'Prop',m:3,x:''},{n:'3 servos (2 aileron, 1 elevator)',m:18,x:''},
+ {n:'Receiver',m:15,x:''},{n:'Battery 2S 650',m:40,x:''},{n:'Foam wing',m:28,x:''},
+ {n:'Carbon rod spars',m:5,x:''},{n:'Fuselage, boom and tail',m:20,x:''},{n:'Wiring and connectors',m:8,x:''},{n:'Printed motor mount and tray',m:5,x:''}];
+var PRESETS=[['700 × 130',700,130,160],['600 × 120',600,120,125],['800 × 140',800,140,190],['500 × 110',500,110,95]];
 
 var S=JSON.parse(JSON.stringify(DEF));
 var parts=JSON.parse(JSON.stringify(DEFPARTS));
@@ -442,25 +443,25 @@ var KM={
  span:['b','len'],chord:['c','len'],mass:['m','mass'],thrust:['T','force'],cells:['S','elec'],mah:['Ah','elec'],
  propd:['2r','len'],rho:['ρ','const'],clmax:['CLmax','coef'],vtest:['V','speed'],cltest:['CL','coef'],
  vcruise:['V','speed'],cd0:['CD0','coef'],e:['e','coef'],etap:['η','coef'],usable:['usable','coef'],
- kv:['KV','elec'],pitch:['pitch','len'],sweep:['Λ','coef'],taper:['λ','coef'],cgmm:['x_cg','len'],
+ kv:['KV','elec'],pitch:['pitch','len'],cgpct:['x_cg','len'],stabA:['S_h','area'],finA:['S_v','area'],lt:['l_t','len'],tailAR:['AR_t','coef'],
  area:['S','area'],ar:['AR','coef'],loading:['m/S','mass'],stall:['V_stall','speed'],tw:['T/W','coef'],
  liftg:['L','force'],clreq:['CL','coef'],vlevel:['V','speed'],clc:['CL','coef'],cdi:['CDi','coef'],cdt:['CD','coef'],
  ld:['L/D','coef'],dragg:['D','force'],pael:['P_aero','power'],pel:['P_elec','power'],icr:['I','elec'],
  ttot:['T','force'],tw2:['T/W','coef'],cthr:['','coef'],icr2:['I','elec'],th:['','elec'],ps:['V_pitch','speed'],tup:['T','force'],
- mac:['MAC','len'],xnp:['x_np','len'],cgp:['x_cg / MAC','len'],sm:['SM','coef'],
- ptot:['Σm','mass'],pplaced:['','mass'],pcg:['x_cg','len'],pcgp:['x_cg / MAC','len']
+ hnp:['h_np','coef'],sm:['SM','coef'],vh:['V_H','coef'],vv:['V_V','coef'],
+ ptot:['Σm','mass'],pplaced:['','mass'],pcg:['x_cg','len'],pcgp:['x_cg / c','len']
 };
 function kindOf(k){return (KM[k]||['','const'])[1]}
 function symHTML(k){var m=KM[k];return m&&m[0]?'<var class="k-'+m[1]+'">'+esc(m[0])+'</var> ':''}
 /* color the variables inside every equation block */
 var EQT=[['T_motor','force'],['T/W','coef'],['L/D','coef'],
  ['V_stall','speed'],['V_pitch','speed'],['V_batt','elec'],['x_cg','len'],['x_np','len'],
- ['x_i','len'],['m_i','mass'],['c_root','len'],['c_tip','len'],['y_mac','len'],
+ ['x_i','len'],['m_i','mass'],['l_t','len'],['S_h','area'],['S_v','area'],['V_H','coef'],['V_V','coef'],['a_t','coef'],['h_np','coef'],['dε/dα','coef'],
  ['P_aero','power'],['P_elec','power'],['I_max','elec'],
  ['CLmax','coef'],['CDi','coef'],['CD0','coef'],['CL','coef'],['CD','coef'],['AR','coef'],['KV','elec'],
- ['RPM','elec'],['Ah','elec'],['capacity','elec'],['usable','coef'],['pitch','len'],['SM','coef'],['MAC','len'],['L','force'],
+ ['RPM','elec'],['Ah','elec'],['capacity','elec'],['usable','coef'],['pitch','len'],['SM','coef'],['L','force'],
  ['D','force'],['W','force'],['T','force'],['V','speed'],['S','area'],['I','elec'],['C','elec'],['m','mass'],
- ['g','const'],['ρ','const'],['π','const'],['η','coef'],['Λ','coef'],['λ','coef'],['e','coef'],['b','len'],['c','len'],
+ ['g','const'],['ρ','const'],['π','const'],['η','coef'],['e','coef'],['b','len'],['c','len'],
  ['r','len'],['y','len'],['w','len'],['n','const']];
 function colorEq(){
  var map={},names=EQT.map(function(t){map[t[0]]=t[1];return t[0]}).sort(function(a,b){return b.length-a.length});
@@ -509,12 +510,14 @@ function perf(V,g){
  var D=q*g.A*CD,Pa=D*V,Pel=Pa/Math.max(S.etap,0.05);
  return {q:q,CL:CL,CDi:CDi,CD:CD,D:D,Pa:Pa,Pel:Pel};
 }
-function wingGeo(){
- var b=Math.max(S.span,1),c=Math.max(S.chord,1),l=Math.min(Math.max(S.taper,0.1),1.5);
- var cr=2*c/(1+l),ct=l*cr;
- var mac=2/3*cr*(1+l+l*l)/(1+l),ymac=b/6*(1+2*l)/(1+l);
- var xle=ymac*Math.tan(S.sweep*Math.PI/180);
- return {cr:cr,ct:ct,mac:mac,ymac:ymac,xle:xle,xnp:xle+0.25*mac};
+function tailGeo(g){
+ var Adm=g.A*100;
+ return {VH:S.stabA*S.lt/(Adm*S.chord),VV:S.finA*S.lt/(Adm*S.span)};
+}
+function npCalc(g,t){
+ var e=S.e,a=2*Math.PI/(1+2/(e*g.AR)),de=2*a/(Math.PI*g.AR);
+ var at=2*Math.PI/(1+2/(e*Math.max(S.tailAR,0.5)));
+ return 0.25+(at/a)*(1-de)*t.VH*0.9;
 }
 
 /* ---------- renderers ---------- */
@@ -566,17 +569,19 @@ function partsCalc(){
  return {M:M,Mp:Mp,xcg:Mp>0?Mx/Mp:NaN};
 }
 function rCG(g){
- var w=wingGeo(),cg=S.cgmm,sm=(w.xnp-cg)/w.mac;
- out('mac',fx(w.mac,0));out('xnp',fx(w.xnp,0));out('cgp',fx((cg-w.xle)/w.mac*100,0));
+ var t=tailGeo(g),hn=npCalc(g,t),cg=S.cgpct/100,sm=hn-cg;
+ stat('hnp',fx(hn*100,0),'','');
  stat('sm',fx(sm*100,0),sm<0?'bad':sm<0.05?'warn':sm<=0.15?'good':'warn',sm<0?'unstable':sm<0.05?'twitchy':sm<=0.15?'in target':'nose-heavy');
- var pc=function(x){return Math.max(0,Math.min(100,(x-w.xle)/w.mac*100))+'%'};
- $('cb-np').style.left=pc(w.xnp);$('cb-cg').style.left=pc(cg);
- var z0=Math.max(0,(w.xnp-0.15*w.mac-w.xle)/w.mac),z1=Math.min(1,Math.max(0,(w.xnp-0.05*w.mac-w.xle)/w.mac));
- $('cb-zone').style.left=(z0*100)+'%';$('cb-zone').style.width=Math.max(0,(z1-z0)*100)+'%';
+ stat('vh',fx(t.VH,2),t.VH<0.3?'bad':t.VH<0.4?'warn':t.VH<=0.7?'good':'warn',t.VH<0.3?'tail too small':t.VH<0.4?'on the small side':t.VH<=0.7?'good':'large');
+ stat('vv',fx(t.VV,3),t.VV<0.02?'warn':'good',t.VV<0.02?'low':'ok');
+ var pc=function(v){return Math.max(0,Math.min(100,v*100))+'%'};
+ $('cb-np').style.left=pc(hn);$('cb-cg').style.left=pc(cg);
+ var z0=Math.max(0,hn-0.15),z1=Math.min(1,Math.max(0,hn-0.05));
+ $('cb-zone').style.left=pc(z0);$('cb-zone').style.width=Math.max(0,(z1-z0)*100)+'%';
  var pcres=partsCalc();
  out('ptot',fx(pcres.M,0));
  stat('pplaced',fx(pcres.M>0?pcres.Mp/pcres.M*100:0,0),pcres.M>0&&pcres.Mp/pcres.M>=0.99?'good':'warn',pcres.M>0&&pcres.Mp/pcres.M>=0.99?'complete':'positions missing');
- out('pcg',fx(pcres.xcg,0));out('pcgp',fx((pcres.xcg-w.xle)/w.mac*100,1));
+ out('pcg',fx(pcres.xcg,0));out('pcgp',fx(pcres.xcg/S.chord*100,1));
 }
 function renderAll(){
  var g=geo(),m=rSummary(g);
@@ -589,14 +594,11 @@ var TERMS=[
 ['Chord (c)','Geometry','Distance from the leading edge to the trailing edge, measured along the airflow.'],
 ['Planform area (S)','Geometry','Wing area seen from above. For this guide, span times mean chord.'],
 ['Aspect ratio (AR)','Geometry','Span squared divided by area. High means long and thin, low means short and wide.'],
-['Mean aerodynamic chord (MAC)','Geometry','The average chord used as the reference length for CG and static margin. On a tapered, swept wing it sits partway out along the span.'],
-['Taper ratio','Geometry','Tip chord divided by root chord. 1 is a rectangle.'],
-['Sweep','Geometry','How far the wing is angled back. It moves the MAC aft and adds pitch stability on a tailless wing.'],
+['Mean aerodynamic chord (MAC)','Geometry','The average chord used as the reference length for CG and static margin. Equal to the chord on a rectangular wing.'],
 ['Leading edge (LE)','Geometry','The front edge of the wing. Round it on a foam wing.'],
 ['Trailing edge (TE)','Geometry','The rear edge of the wing, where the flow leaves. Keep it thin.'],
 ['Airfoil','Geometry','The cross-section shape of the wing.'],
 ['Camber','Geometry','Curvature of the airfoil. A cambered wing makes lift at zero angle of attack and gives a higher CLmax than a flat plate.'],
-['Washout','Geometry','Twisting the wingtips to a lower angle than the root. It helps the root stall first and adds stability on a swept wing.'],
 ['Dihedral','Geometry','The upward angle of the wings seen from the front. It adds roll stability.'],
 ['Lift (L)','Aerodynamics','The force that holds the aircraft up, perpendicular to the airflow.'],
 ['Drag (D)','Aerodynamics','The force opposing motion through the air.'],
@@ -612,14 +614,18 @@ var TERMS=[
 ['Reynolds number (Re)','Aerodynamics','A measure of how viscous effects scale with size and speed. Small, slow models fly at low Re, where thin sharp-edged airfoils work well and thick ones stall early.'],
 ['Center of gravity (CG)','Stability','The balance point of the whole aircraft.'],
 ['Aerodynamic center (AC)','Stability','The point on a wing where the pitching moment does not change with angle of attack. About 25% of chord.'],
-['Neutral point (NP)','Stability','The aircraft-wide version of the aerodynamic center. On a flying wing it is close to the wing\'s own AC. The CG must sit ahead of it.'],
-['Static margin','Stability','The distance from CG to neutral point as a fraction of the MAC. Positive is stable.'],
-['Reflex','Stability','Raising the trailing edge slightly so the rear of the wing pushes the tail end down. It lets a tailless wing trim without a tail.'],
+['Neutral point (NP)','Stability','The aircraft-wide version of the aerodynamic center, including the tail. The CG must sit ahead of it.'],
+['Static margin','Stability','The distance from CG to neutral point as a fraction of the chord. Positive is stable.'],
+['Tail volume coefficient','Stability','A measure of how effective a tail is: area times lever arm, relative to the wing.'],
+['Downwash','Stability','Air pushed down behind a wing. It reduces the angle of attack the tail sees.'],
 ['Pitch, roll, yaw','Stability','Nose up/down, one wing up/down, and nose left/right.'],
 ['Moment','Stability','A turning effect: force times the distance from the pivot.'],
 ['Trim','Stability','Setting the controls so the aircraft flies straight with no stick input.'],
-['Elevon','Controls','A trailing-edge surface that works as both elevator and aileron. The two move together for pitch and opposite for roll.'],
 ['Aileron','Controls','A wing control surface for roll.'],
+['Elevator','Controls','The hinged rear part of the horizontal stabilizer. It controls pitch.'],
+['Rudder','Controls','The hinged rear part of the fin. It controls yaw. Many small planes fly fine without one.'],
+['Stabilizer and fin','Controls','The fixed horizontal and vertical tail surfaces that keep the plane pointing straight and level.'],
+['Boom','Geometry','The tube or rod connecting the wing area to the tail.'],
 ['Control throw','Controls','How far a surface moves. Too much makes the plane twitchy.'],
 ['Servo','Controls','A small motor that moves a control surface to a commanded position.'],
 ['Pushrod and horn','Controls','The wire and the lever that connect a servo to a surface.'],
@@ -637,7 +643,7 @@ var TERMS=[
 ['Voltage sag','Electrical','The battery voltage dropping under load. Big at high current and in cold or worn packs.'],
 ['PWM','Electrical','The pulse signal that tells servos and ESCs what position or speed to hold.'],
 ['AFHDS 2A','Radio','The FS-i6 radio protocol. Your receiver must support it to bind.'],
-['Mixing','Radio','Combining stick inputs into the signals for each servo, such as elevon mixing.'],
+['Y-lead','Radio','A cable that splits one receiver channel to two servos, such as two ailerons.'],
 ['Failsafe','Radio','What the aircraft does when the radio link drops. Set throttle to cut and surfaces to neutral.'],
 ['Range check','Radio','A ground test with the transmitter at low power to confirm the link before flight.'],
 ['Hand launch','Flying','Throwing the plane into the wind at about half throttle, level or slightly nose-up.']
@@ -645,8 +651,11 @@ var TERMS=[
 var RULES=[
 ['Wing loading (micro plane)','under 20 g/dm² floaty, 20 to 30 workable, over 30 fast','Sets stall speed and landing speed.'],
 ['Stall speed','6 m/s or less','Lower is easier to launch and land.'],
-['Static margin','5 to 15% of the MAC','Below 5% is twitchy, below 0 is unstable. Start nose-heavy.'],
-['Sweep (tailless wing)','15 to 30 degrees','Needs reflex and some washout to stay stable.'],
+['Static margin','Stability','The distance from CG to neutral point as a fraction of the chord. Positive is stable.'],
+['Tail volume coefficient','Stability','A measure of how effective a tail is: area times lever arm, relative to the wing.'],
+['Downwash','Stability','Air pushed down behind a wing. It reduces the angle of attack the tail sees.'],
+['Tail volume V_H','0.4 to 0.7','Smaller tails need more speed to be effective.'],
+['Tail volume V_V','0.02 to 0.05 or more','Enough fin keeps the nose from wandering.'],
 ['Thrust-to-weight','1 minimum, 1.5 to 2 comfortable','Enough to climb out after a hand launch.'],
 ['Cruise throttle','50% or less','Leaves reserve for climbing and wind.'],
 ['Prop pitch speed','at least 1.5 times cruise speed','Otherwise the prop cannot pull you forward.'],
@@ -679,7 +688,7 @@ document.addEventListener('click',function(e){
  if(t.dataset.cat!==undefined){gcat=t.dataset.cat;renderTerms();return}
  if(t.id==='add-part'){parts.push({n:'New part',m:0,x:''});buildParts();save();renderAll();return}
  if(t.id==='reset-parts'){parts=JSON.parse(JSON.stringify(DEFPARTS));buildParts();save();renderAll();return}
- if(t.id==='use-cg'){var c=partsCalc();if(isFinite(c.xcg)){S.cgmm=Math.round(c.xcg);syncInputs();save();renderAll()}return}
+ if(t.id==='use-cg'){var c=partsCalc();if(isFinite(c.xcg)){S.cgpct=Math.round(c.xcg/S.chord*1000)/10;syncInputs();save();renderAll()}return}
  if(t.id==='use-mass'){var c2=partsCalc();if(c2.M>0){S.mass=Math.round(c2.M);syncInputs();save();renderAll()}return}
 });
 
