@@ -120,7 +120,7 @@ TWIST_MAX = 2.0     # deg, max nacelle twist at full thrust on one motor
 RATE_MAX = 3.0      # rad/s, max body rate for gyroscopic load (about 170 deg/s)
 
 # ---- batteries --------------------------------------------------------
-BATT = {"3S 2200": (190.0, 2.2, 105.0), "3S 1300": (110.0, 1.3, 75.0)}  # g, Ah, length [A]
+BATT = {"3S 1800": (155.0, 1.8, 100.0), "3S 2200": (190.0, 2.2, 105.0), "3S 1300": (110.0, 1.3, 75.0)}  # g, Ah, length [A] (1800 is an estimate: weigh the real pack)
 
 
 # =====================================================================
@@ -562,7 +562,7 @@ def main():
         results[batt] = (xb, comp, M, xc, zc)
 
     hdr("2. Component placement and CG  (recommended layout, nacelles at y = +/-%d)" % NAC_Y_REC)
-    xb, comp, M, xc, zc = results["3S 2200"]
+    xb, comp, M, xc, zc = results["3S 1800"]
     print(f"{'component':46s} {'m g':>6s} {'x':>6s} {'y':>6s} {'m*x':>9s}  tag")
     for name, m, x, y, z, tag in comp:
         print(f"{name:46s} {m:6.1f} {x:6.0f} {y:6.0f} {m * x:9.0f}  {tag}")
@@ -576,7 +576,7 @@ def main():
         print(f"  {batt}: battery centre x = {xb:.0f} mm, AUW = {Mb:.0f} g, "
               f"x_cg = {xcb:.1f} mm ({xcb / CHORD * 100:.1f} %)")
     # 1300 pack left at the 2200 station
-    xb22 = results["3S 2200"][0]
+    xb22 = results["3S 1800"][0]
     comp_x = components(NAC_Y_REC, "3S 1300", xb22)
     Mx, xcx, _, _ = cg(comp_x)
     print(f"  3S 1300 left at x = {xb22:.0f}: x_cg = {xcx:.1f} mm ({xcx / CHORD * 100:.1f} %)  <- move it!")
@@ -636,12 +636,12 @@ def main():
     h = hover(Mx, xcx)
     print(f"  3S 1300 NOT moved (x_cg {xcx:.0f}): T_rear {h['T_r']:.0f} g, front 2 x {h['T_f']:.0f} g, "
           f"rear throttle {h['thr_r'] * 100:.0f} %")
-    h_tip = hover(results["3S 2200"][2], results["3S 2200"][3])
+    h_tip = hover(results["3S 1800"][2], results["3S 1800"][3])
 
-    hdr("5. Inertia and hover control authority (3S 2200 case)")
+    hdr("5. Inertia and hover control authority (3S 1800 case)")
     for lab, ny, spar in ((f"recommended y={NAC_Y_REC:.0f}", NAC_Y_REC, "rec"), ("wing tips y=650", NAC_Y_TIP, "tip")):
-        xb = solve_batt(ny, "3S 2200", spar)
-        cp = components(ny, "3S 2200", xb, spar)
+        xb = solve_batt(ny, "3S 1800", spar)
+        cp = components(ny, "3S 1800", xb, spar)
         Mi, xi, _, zi = cg(cp)
         I = inertia(cp, ny, xi, zi)
         hh = hover(Mi, xi)
@@ -683,8 +683,8 @@ def main():
           f"{max(0, AIL_Y1 - clt['wash_band_full'][0]):.0f} mm")
 
     hdr("7. Structure")
-    M22 = results["3S 2200"][2]
-    h22 = hov["3S 2200"]
+    M22 = results["3S 1800"][2]
+    h22 = hov["3S 1800"]
     print(f"  Foam-board-only EI (paper faces, [A] E={E_PAPER:.0f} MPa, t={T_PAPER} mm): "
           f"{foam_EI():.2e} N mm^2")
     rows = [("tips y=650", NAC_Y_TIP, s) for s in (ROD4, T10, T12)]
@@ -715,13 +715,13 @@ def main():
     b = boom_struct(M22)
     print(f"  Boom 10x8: rear thrust arm {b['L_r']:.0f} mm ({b['M_r'] / 1000:.2f} N m), tail arm "
           f"{b['L_t']:.0f} mm, sigma x SF = {b['sigma']:.0f} MPa, tail bending mode {b['f']:.0f} Hz")
-    ts = tilt_servo(hov["3S 2200"], ctl_rec)
+    ts = tilt_servo(hov["3S 1800"], ctl_rec)
     print(f"  Tilt servo: gravity {ts['tq_g'] * 1000:.0f}, gyro {ts['tq_gyro'] * 1000:.0f} "
           f"(I_p {ts['I_p'] * 1e6:.1f} kg mm^2, {ts['w']:.0f} rad/s, {RATE_MAX} rad/s body rate), "
           f"aero {ts['tq_aero'] * 1000:.0f} N mm; total {ts['tot'] * 1000:.0f} N mm")
     print(f"     with x2 margin: {ts['need_kgcm']:.2f} kg cm; travel needed {ts['travel']:.0f} deg")
 
-    hdr("8. Mass comparison of layouts (3S 2200 / 3S 1300)")
+    hdr("8. Mass comparison of layouts (3S 1800 / 2200 / 1300)")
     for lab, ny, spar in ((f"recommended y={NAC_Y_REC:.0f}", NAC_Y_REC, "rec"), ("wing tips y=650", NAC_Y_TIP, "tip")):
         out = []
         for batt in BATT:
@@ -741,112 +741,296 @@ def main():
 
 
 # =====================================================================
-# SVG views
+# SVG views (CAD-style, dimensioned)
 # =====================================================================
+SVG_STYLE = (
+    "<style>"
+    ".o{fill:none;stroke:#222;stroke-width:1.2}.w{fill:#f4e3b0;stroke:#222;stroke-width:1.2}"
+    ".p{fill:#cfe3ff;fill-opacity:.5;stroke:#2a62b8;stroke-width:1}"
+    ".c{fill:none;stroke:#888;stroke-width:.8;stroke-dasharray:6 4}"
+    ".b{fill:#d9d9d9;stroke:#222;stroke-width:1}.r{fill:#ffd2c2;stroke:#b33;stroke-width:1}"
+    ".t{font:12px sans-serif;fill:#222}.cg{fill:#c00}"
+    ".g{stroke:#c77;stroke-width:.5;stroke-dasharray:10 3 2 3;fill:none}"
+    ".d{stroke:#0b4f8a;stroke-width:.8;fill:none}.da{fill:#0b4f8a}"
+    ".dt{font:11.5px sans-serif;fill:#0b4f8a}.dh{font:11.5px sans-serif;fill:#fff;stroke:#fff;stroke-width:3.5px;stroke-linejoin:round}"
+    ".fr{fill:none;stroke:#222;stroke-width:1.5}.tb{font:11px sans-serif;fill:#222}"
+    ".tbh{font:bold 14px sans-serif;fill:#222}"
+    "</style>")
+
+
+def _n(v):
+    return f"{v:.1f}".rstrip("0").rstrip(".") if abs(v - round(v)) > 1e-6 else f"{round(v):d}"
+
+
+class _Dwg:
+    """Tiny SVG builder with CAD dimension helpers. Coordinates are SVG user units (= mm)."""
+    AH, AW = 8.0, 2.4  # arrow length, half width
+
+    def __init__(self):
+        self.s = []
+
+    def add(self, x):
+        self.s.append(x)
+
+    def arrow(self, x, y, dx, dy):
+        px, py = -dy, dx
+        bx, by = x - dx * self.AH, y - dy * self.AH
+        self.add(f'<polygon class="da" points="{x:.1f},{y:.1f} {bx + px * self.AW:.1f},{by + py * self.AW:.1f} '
+                 f'{bx - px * self.AW:.1f},{by - py * self.AW:.1f}"/>')
+
+    def text(self, x, y, s, cls="t", anchor="middle", rot=None):
+        tr = f' transform="rotate({rot} {x:.1f} {y:.1f})"' if rot is not None else ""
+        if cls == "dt":  # white halo drawn first, then the text on top
+            self.add(f'<text class="dh" x="{x:.1f}" y="{y:.1f}" text-anchor="{anchor}"{tr}>{s}</text>')
+        self.add(f'<text class="{cls}" x="{x:.1f}" y="{y:.1f}" text-anchor="{anchor}"{tr}>{s}</text>')
+
+    def hdim(self, a, b, y, label=None, e0=None, e1=None, tp="c"):
+        """Horizontal dimension between x=a and x=b, dim line at svg y. e0/e1: y where the
+        extension line starts (at the feature)."""
+        if a > b:
+            a, b = b, a
+            e0, e1 = e1, e0
+        label = _n(b - a) if label is None else label
+        for xx, e in ((a, e0), (b, e1)):
+            if e is None:
+                e = y - 6
+            sg = 1 if y > e else -1
+            self.add(f'<line class="d" x1="{xx:.1f}" y1="{e + 2 * sg:.1f}" x2="{xx:.1f}" y2="{y + 5 * sg:.1f}"/>')
+        narrow = (b - a) < 3 * self.AH + 6
+        if narrow:
+            self.add(f'<line class="d" x1="{a - 14:.1f}" y1="{y}" x2="{b + 14:.1f}" y2="{y}"/>')
+        else:
+            self.add(f'<line class="d" x1="{a:.1f}" y1="{y}" x2="{b:.1f}" y2="{y}"/>')
+            self.add(f'<polygon class="da" points="{a:.1f},{y} {a + self.AH:.1f},{y - self.AW} {a + self.AH:.1f},{y + self.AW}"/>')
+            self.add(f'<polygon class="da" points="{b:.1f},{y} {b - self.AH:.1f},{y - self.AW} {b - self.AH:.1f},{y + self.AW}"/>')
+        if narrow:
+            # arrows from outside, pointing at the extension lines
+            self.add(f'<polygon class="da" points="{a:.1f},{y} {a - self.AH:.1f},{y - self.AW} {a - self.AH:.1f},{y + self.AW}"/>')
+            self.add(f'<polygon class="da" points="{b:.1f},{y} {b + self.AH:.1f},{y - self.AW} {b + self.AH:.1f},{y + self.AW}"/>')
+        if tp == "l":
+            self.text(a - 18, y + 4, label, "dt", "end")
+        elif tp == "r":
+            self.text(b + 18, y + 4, label, "dt", "start")
+        else:
+            self.text((a + b) / 2, y - 4, label, "dt")
+
+    def vdim(self, x, a, b, label=None, e0=None, e1=None, side="l"):
+        """Vertical dimension between svg y=a and y=b, dim line at svg x. e0/e1: x where the
+        extension line starts."""
+        if a > b:
+            a, b = b, a
+            e0, e1 = e1, e0
+        label = _n(b - a) if label is None else label
+        for yy, e in ((a, e0), (b, e1)):
+            if e is None:
+                e = x - 6
+            sg = 1 if x > e else -1
+            self.add(f'<line class="d" x1="{e + 2 * sg:.1f}" y1="{yy:.1f}" x2="{x + 5 * sg:.1f}" y2="{yy:.1f}"/>')
+        narrow = (b - a) < 3 * self.AH + 6
+        if narrow:
+            self.add(f'<line class="d" x1="{x}" y1="{a - 14:.1f}" x2="{x}" y2="{b + 14:.1f}"/>')
+            self.add(f'<polygon class="da" points="{x},{a:.1f} {x - self.AW},{a - self.AH:.1f} {x + self.AW},{a - self.AH:.1f}"/>')
+            self.add(f'<polygon class="da" points="{x},{b:.1f} {x - self.AW},{b + self.AH:.1f} {x + self.AW},{b + self.AH:.1f}"/>')
+        else:
+            self.add(f'<line class="d" x1="{x}" y1="{a:.1f}" x2="{x}" y2="{b:.1f}"/>')
+            self.add(f'<polygon class="da" points="{x},{a:.1f} {x - self.AW},{a + self.AH:.1f} {x + self.AW},{a + self.AH:.1f}"/>')
+            self.add(f'<polygon class="da" points="{x},{b:.1f} {x - self.AW},{b - self.AH:.1f} {x + self.AW},{b - self.AH:.1f}"/>')
+        tx = x - 4 if side == "l" else x + 13
+        self.text(tx, (a + b) / 2, label, "dt", "middle", rot=-90)
+
+    def hchain(self, pts, y, starts, **kw):
+        for i in range(len(pts) - 1):
+            self.hdim(pts[i], pts[i + 1], y, e0=starts[i], e1=starts[i + 1], **kw)
+
+    def vchain(self, pts, x, starts, **kw):
+        for i in range(len(pts) - 1):
+            self.vdim(x, pts[i], pts[i + 1], e0=starts[i], e1=starts[i + 1], **kw)
+
+    def frame(self, vb, title, sub, notes):
+        x0, y0, W, H = vb
+        self.add(f'<rect class="fr" x="{x0 + 8}" y="{y0 + 8}" width="{W - 16}" height="{H - 16}"/>')
+        bw, bh = 470, 78
+        bx, by = x0 + W - 8 - bw, y0 + H - 8 - bh
+        self.add(f'<rect class="fr" x="{bx}" y="{by}" width="{bw}" height="{bh}" style="fill:#fff"/>')
+        self.add(f'<line class="fr" x1="{bx}" y1="{by + 30}" x2="{bx + bw}" y2="{by + 30}" style="stroke-width:1"/>')
+        self.add(f'<line class="fr" x1="{bx + 250}" y1="{by + 30}" x2="{bx + 250}" y2="{by + bh}" style="stroke-width:1"/>')
+        self.text(bx + 10, by + 21, title, "tbh", "start")
+        self.text(bx + 465, by + 21, sub, "tb", "end")
+        for i, n in enumerate(notes[0]):
+            self.text(bx + 10, by + 47 + 15 * i, n, "tb", "start")
+        for i, n in enumerate(notes[1]):
+            self.text(bx + 260, by + 47 + 15 * i, n, "tb", "start")
+
+
 def write_svgs(results):
     import os
     here = os.path.dirname(os.path.abspath(__file__))
     out = os.path.join(here, "..", "docs")
-    xb22 = results["3S 2200"][0]
+    xb22 = results["3S 1800"][0]
     xb13 = results["3S 1300"][0]
-    st = ("<style>.o{fill:none;stroke:#222;stroke-width:1.2}.w{fill:#f4e3b0;stroke:#222;stroke-width:1.2}"
-          ".p{fill:#cfe3ff;fill-opacity:.5;stroke:#2a62b8;stroke-width:1}"
-          ".c{fill:none;stroke:#888;stroke-width:.8;stroke-dasharray:6 4}"
-          ".b{fill:#d9d9d9;stroke:#222;stroke-width:1}.r{fill:#ffd2c2;stroke:#b33;stroke-width:1}"
-          ".t{font:12px sans-serif;fill:#222}.cg{fill:#c00}</style>")
-    # ---- top view: x down the page, y across
     ny = NAC_Y_REC
-    x0, x1 = FUS_X0 - 40, BOOM_X1 + 60
-    y0, y1 = -SPAN / 2 - 40, SPAN / 2 + 40
-    W, H = y1 - y0, x1 - x0
-    s = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{y0} {x0} {W} {H}" '
-         f'width="{W:.0f}" height="{H:.0f}">', st,
-         f'<rect x="{y0}" y="{x0}" width="{W}" height="{H}" fill="#fff"/>']
-    s.append(f'<rect class="w" x="{-SPAN / 2}" y="0" width="{SPAN}" height="{CHORD}"/>')
+    zt = Z_HT + FOAM_T                       # stabilizer top
+    zr = Z_BOOM + BOOM_D / 2 + REAR_MOUNT_H + MOTOR_PROP_H
+    fin_top = zt + FIN_H
+    X_FIN0 = FIN_TE - FIN_CR
+    X_TAIL_TE = X_TAIL_LE + C_TAIL
+    X_HINGE = CHORD - AIL_CHORD
+    notes0 = ["Units: mm. 1 unit = 1 mm, drawn 1:1 px",
+              "Parameters: tools/geometry.py (mostly [A])"]
+    notes1 = ["Origin: wing LE on centerline", "x aft, y right, z up; z=0 foam mid-plane"]
+
+    # =============== TOP VIEW: svg X = y, svg Y = x (aft is down, nose up) ===============
+    d = _Dwg()
+    vb = (-800, -345, 1640, 1150)
+    d.add(f'<rect x="{vb[0]}" y="{vb[1]}" width="{vb[2]}" height="{vb[3]}" fill="#fff"/>')
+    # datum guides across the drawing
+    for gx in (X_AXLE, 0, X_SPAR, X_CG_TARGET, X_HINGE, CHORD, X_REAR, X_TAIL_LE, X_TAIL_TE):
+        d.add(f'<line class="g" x1="-725" y1="{gx}" x2="725" y2="{gx}"/>')
+    d.add(f'<line class="g" x1="0" y1="{FUS_X0 - 25}" x2="0" y2="{FIN_TE + 25}"/>')
+    for sg in (-1, 1):
+        d.add(f'<line class="g" x1="{sg * ny}" y1="{X_AXLE - R - 25}" x2="{sg * ny}" y2="{CHORD + 25}"/>')
+    # airframe
+    d.add(f'<rect class="w" x="{-SPAN / 2}" y="0" width="{SPAN}" height="{CHORD}"/>')
     for sg in (-1, 1):
         ya, yb = sorted((sg * AIL_Y0, sg * AIL_Y1))
-        s.append(f'<rect class="o" x="{ya}" y="{CHORD - AIL_CHORD}" width="{yb - ya}" height="{AIL_CHORD}"/>')
-    s.append(f'<rect class="b" x="{-(ny + 40)}" y="{X_SPAR - 5}" width="{2 * (ny + 40)}" height="10"/>')
-    s.append(f'<line class="c" x1="{-SPAN / 2}" y1="{X_SPAR}" x2="{SPAN / 2}" y2="{X_SPAR}"/>')
-    s.append(f'<rect class="b" x="{-FUS_W / 2}" y="{FUS_X0}" width="{FUS_W}" height="{FUS_X1 - FUS_X0}" rx="18"/>')
-    s.append(f'<rect class="b" x="{-BOOM_D / 2}" y="{BOOM_X0}" width="{BOOM_D}" height="{BOOM_X1 - BOOM_X0}"/>')
-    s.append(f'<rect class="w" x="{-B_HT / 2}" y="{X_TAIL_LE}" width="{B_HT}" height="{C_TAIL}"/>')
-    s.append(f'<rect class="o" x="{-B_HT / 2}" y="{X_TAIL_LE + C_TAIL - ELEV_C}" width="{B_HT}" height="{ELEV_C}"/>')
-    s.append(f'<rect class="b" x="-2.5" y="{FIN_TE - FIN_CR}" width="5" height="{FIN_CR}"/>')
+        d.add(f'<rect class="o" x="{ya}" y="{X_HINGE}" width="{yb - ya}" height="{AIL_CHORD}"/>')
+    d.add(f'<rect class="b" x="{-(ny + 40)}" y="{X_SPAR - 5}" width="{2 * (ny + 40)}" height="10"/>')
+    d.add(f'<line class="c" x1="{-SPAN / 2}" y1="{X_SPAR}" x2="{SPAN / 2}" y2="{X_SPAR}"/>')
+    d.add(f'<rect class="b" x="{-FUS_W / 2}" y="{FUS_X0}" width="{FUS_W}" height="{FUS_X1 - FUS_X0}" rx="18"/>')
+    d.add(f'<rect class="b" x="{-BOOM_D / 2}" y="{BOOM_X0}" width="{BOOM_D}" height="{BOOM_X1 - BOOM_X0}"/>')
+    d.add(f'<rect class="w" x="{-B_HT / 2}" y="{X_TAIL_LE}" width="{B_HT}" height="{C_TAIL}"/>')
+    d.add(f'<rect class="o" x="{-B_HT / 2}" y="{X_TAIL_TE - ELEV_C}" width="{B_HT}" height="{ELEV_C}"/>')
+    d.add(f'<rect class="b" x="-2.5" y="{X_FIN0}" width="5" height="{FIN_CR}"/>')
     for sg in (-1, 1):
         y = sg * ny
-        s.append(f'<rect class="r" x="{y - 15}" y="{X_AXLE - 10}" width="30" height="{X_SPAR - X_AXLE + 20}"/>')
-        s.append(f'<circle class="p" cx="{y}" cy="{X_AXLE}" r="{R}"/>')
-        s.append(f'<line class="c" x1="{y - R - 10}" y1="{X_AXLE}" x2="{y + R + 10}" y2="{X_AXLE}"/>')
-        yt = sg * NAC_Y_TIP
-        s.append(f'<circle cx="{yt}" cy="{X_AXLE}" r="{R}" fill="none" stroke="#aaa" stroke-dasharray="4 3"/>')
-    s.append(f'<circle class="p" cx="0" cy="{X_REAR}" r="{R}"/>')
-    s.append(f'<circle class="cg" cx="0" cy="{X_CG_TARGET}" r="5"/>')
-    s.append(f'<rect class="o" x="-17" y="{xb22 - 52}" width="34" height="105"/>')
-    s.append(f'<rect class="o" x="-17" y="{xb13 - 37}" width="34" height="75" stroke-dasharray="3 2"/>')
-    s.append(f'<line class="c" x1="0" y1="{X_AXLE}" x2="0" y2="{X_REAR}"/>')
-    lab = [(ny + R + 8, X_AXLE + 4, f"tilt axle x={X_AXLE:.0f}, y=±{ny:.0f}"),
-           (NAC_Y_TIP - 330, X_AXLE - R - 8, "grey dashed: wing-tip position (not recommended)"),
-           (R + 8, X_REAR + 4, f"rear motor x={X_REAR:.0f}"),
-           (12, X_CG_TARGET + 18, f"CG x={X_CG_TARGET:.0f}"),
-           (B_HT / 2 + 8, X_TAIL_LE + 55, f"stabilizer {B_HT:.0f}×{C_TAIL:.0f}, elevator, fin"),
-           (-SPAN / 2 + 8, CHORD + 18, "wing 1300 × 200, LE at x=0"),
-           (AIL_Y0, CHORD + 18, "aileron"),
-           (FUS_W / 2 + 6, xb22, "batt 2200 / 1300 (dashed)"),
-           (y0 + 20, x1 - 30, "TOP VIEW, 1 unit = 1 mm, nose up. Origin = wing LE on centerline")]
-    for (x, y, tx) in lab:
-        s.append(f'<text class="t" x="{x}" y="{y}">{tx}</text>')
-    s.append(f'<line x1="{y0 + 20}" y1="{x1 - 15}" x2="{y0 + 120}" y2="{x1 - 15}" stroke="#222" stroke-width="2"/>')
-    s.append(f'<text class="t" x="{y0 + 125}" y="{x1 - 11}">100 mm</text>')
-    s.append("</svg>")
+        d.add(f'<rect class="r" x="{y - 15}" y="{X_AXLE - 10}" width="30" height="{X_SPAR - X_AXLE + 20}"/>')
+        d.add(f'<circle class="p" cx="{y}" cy="{X_AXLE}" r="{R}"/>')
+        d.add(f'<line class="c" x1="{y - R - 10}" y1="{X_AXLE}" x2="{y + R + 10}" y2="{X_AXLE}"/>')
+        d.add(f'<circle cx="{sg * NAC_Y_TIP}" cy="{X_AXLE}" r="{R}" fill="none" stroke="#aaa" stroke-dasharray="4 3"/>')
+    d.add(f'<circle class="p" cx="0" cy="{X_REAR}" r="{R}"/>')
+    d.add(f'<circle class="cg" cx="0" cy="{X_CG_TARGET}" r="5"/>')
+    d.add(f'<rect class="o" x="-17" y="{xb22 - 52}" width="34" height="105"/>')
+    d.add(f'<rect class="o" x="-17" y="{xb13 - 37}" width="34" height="75" stroke-dasharray="3 2"/>')
+    # --- spanwise dimensions (above the nose)
+    yT1, yT2 = -265, -300
+    pts = [-SPAN / 2, -ny, 0, ny, SPAN / 2]
+    d.hchain(pts, yT1, [0, X_AXLE - R, FUS_X0, X_AXLE - R, 0])
+    d.hdim(-SPAN / 2, SPAN / 2, yT2, f"{_n(SPAN)} span", 0, 0)
+    d.hdim(-ny - R, -ny + R, X_AXLE - R - 22, f"Ø{_n(PROP_D)} (5 in)", X_AXLE, X_AXLE)
+    d.hdim(ny - R, ny + R, X_AXLE - R - 22, f"Ø{_n(PROP_D)} (5 in)", X_AXLE, X_AXLE)
+    # --- aileron chain below the wing TE
+    yA = CHORD + 36
+    apts = [-SPAN / 2, -AIL_Y1, -AIL_Y0, AIL_Y0, AIL_Y1, SPAN / 2]
+    d.hchain(apts, yA, [CHORD] * 6)
+    # tip-end labels outside for narrow segments
+    # --- fuselage width, rear prop
+    d.hdim(-FUS_W / 2, FUS_W / 2, 125, e0=None, e1=None, tp="r")
+    d.hdim(-R, R, X_REAR + R + 28, f"Ø{_n(PROP_D)} (5 in)", X_REAR, X_REAR)
+    # --- stabilizer span
+    d.hdim(-B_HT / 2, B_HT / 2, X_TAIL_TE + 45, e0=X_TAIL_TE, e1=X_TAIL_TE)
+    # --- stabilizer / elevator / fin chord (left of the stabilizer)
+    d.vchain([X_TAIL_LE, X_TAIL_TE - ELEV_C, X_TAIL_TE], B_HT / 2 + 28, [B_HT / 2] * 3)
+    d.vdim(-B_HT / 2 - 28, X_TAIL_LE, X_TAIL_TE, f"{_n(C_TAIL)} stab", -B_HT / 2, -B_HT / 2)
+    d.vdim(-30, X_FIN0, FIN_TE, f"{_n(FIN_CR)} fin root", -2.5, -2.5)
+    # --- right-hand chordwise columns
+    xr1, xr2 = 755, 800
+    st = 725
+    d.vchain([X_AXLE, 0, CHORD, X_REAR, X_TAIL_LE, X_TAIL_TE], xr1, [st] * 6)
+    d.vdim(xr2, FUS_X0, FIN_TE, f"{_n(FIN_TE - FUS_X0)} overall", st, st)
+    # --- left-hand datum chain from the wing LE
+    xl = -755
+    d.vchain([0, X_SPAR, X_CG_TARGET, X_HINGE, CHORD], xl, [-st] * 5)
+    # labels
+    for (x, y, tx) in [
+        (ny + R + 12, X_AXLE - 6, f"tilt axle x={_n(X_AXLE)}, y=±{_n(ny)}"),
+        (-SPAN / 2 + 25, 100, "WING 1300 × 200, foam 5 mm"),
+        (-SPAN / 2 + 25, X_HINGE + 32, "aileron, hinge x=150"),
+        (FUS_W / 2 + 8, xb22 + 4, "batt 2200 / 1300 (dashed)"),
+        (R + 12, X_REAR + 4, f"rear motor x={_n(X_REAR)}"),
+        (12, X_CG_TARGET + 22, f"CG x={_n(X_CG_TARGET)}"),
+        (B_HT / 2 + 80, X_TAIL_LE + 62, "STABILIZER + ELEVATOR"),
+        (NAC_Y_TIP - 280, X_AXLE - R - 70, "grey dashed: wing-tip position (not recommended)"),
+    ]:
+        d.text(x, y, tx, "t", "start")
+    d.frame(vb, "CITRUS TILTROTOR - Y tilt-tri", "TOP VIEW (nose up)", (notes0, notes1))
+    svg = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb[0]} {vb[1]} {vb[2]} {vb[3]}" '
+           f'width="{vb[2]}" height="{vb[3]}">', SVG_STYLE] + d.s + ["</svg>"]
     with open(os.path.join(out, "geometry-top.svg"), "w") as f:
-        f.write("\n".join(s))
-    # ---- side view: x across, z up (svg y = -z)
-    x0, x1 = FUS_X0 - 40, BOOM_X1 + 40
-    z0, z1 = GEAR_Z - 30, 260
-    W, H = x1 - x0, z1 - z0
-    s = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{x0} {-z1} {W} {H}" '
-         f'width="{W:.0f}" height="{H:.0f}">', st,
-         f'<rect x="{x0}" y="{-z1}" width="{W}" height="{H}" fill="#fff"/>']
-    s.append(f'<line x1="{x0}" y1="{-GEAR_Z}" x2="{x1}" y2="{-GEAR_Z}" stroke="#6a4" stroke-width="2"/>')
-    s.append(f'<rect class="b" x="{FUS_X0}" y="{-FUS_ZTOP}" width="{FUS_X1 - FUS_X0}" height="{FUS_H}" rx="14"/>')
-    s.append(f'<rect class="w" x="0" y="{-FOAM_T / 2}" width="{CHORD}" height="{FOAM_T}"/>')
-    s.append(f'<circle class="b" cx="{X_SPAR}" cy="{7.5}" r="5"/>')
-    s.append(f'<rect class="b" x="{BOOM_X0}" y="{-Z_BOOM - BOOM_D / 2}" width="{BOOM_X1 - BOOM_X0}" height="{BOOM_D}"/>')
-    # pylon
-    s.append(f'<rect class="r" x="{X_AXLE - 8}" y="{-(-2.5)}" width="{X_SPAR - X_AXLE + 20}" height="14"/>')
-    for th, cls in ((0, "p"), (90, "p"), (-15, "c")):
-        pts = disc_pts(th, 2)
-        (ax, az), (bx, bz) = pts
-        s.append(f'<line x1="{ax}" y1="{-az}" x2="{bx}" y2="{-bz}" stroke="#2a62b8" stroke-width="3"'
-                 + (' stroke-dasharray="5 3"' if cls == "c" else "") + "/>")
-    s.append(f'<circle cx="{X_AXLE}" cy="{-Z_AXLE}" r="{math.hypot(H_PROP, R):.1f}" class="c"/>')
-    s.append(f'<circle cx="{X_AXLE}" cy="{-Z_AXLE}" r="3" fill="#b33"/>')
-    zr = Z_BOOM + BOOM_D / 2 + REAR_MOUNT_H + MOTOR_PROP_H
-    s.append(f'<line x1="{X_REAR - R}" y1="{-zr}" x2="{X_REAR + R}" y2="{-zr}" stroke="#2a62b8" stroke-width="3"/>')
-    s.append(f'<rect class="b" x="{X_REAR - 14}" y="{-zr}" width="28" height="{zr - Z_BOOM - BOOM_D / 2}"/>')
-    zt = Z_HT + FOAM_T
-    s.append(f'<rect class="w" x="{X_TAIL_LE}" y="{-zt}" width="{C_TAIL}" height="{FOAM_T}"/>')
-    s.append(f'<polygon class="w" points="{FIN_TE - FIN_CR},{-zt} {FIN_TE},{-zt} '
-             f'{FIN_TE},{-(zt + FIN_H)} {FIN_TE - FIN_CT},{-(zt + FIN_H)}"/>')
-    s.append(f'<line class="c" x1="{FIN_TE - RUDDER_C}" y1="{-(zt + RUDDER_GAP)}" '
-             f'x2="{FIN_TE - RUDDER_C}" y2="{-(zt + FIN_H)}"/>')
+        f.write("\n".join(svg))
+
+    # =============== SIDE VIEW: svg X = x, svg Y = -z ===============
+    d = _Dwg()
+    vb = (-440, -330, 1300, 700)
+    d.add(f'<rect x="{vb[0]}" y="{vb[1]}" width="{vb[2]}" height="{vb[3]}" fill="#fff"/>')
+    for gx in (X_AXLE, 0, X_SPAR, X_CG_TARGET, CHORD, X_REAR, X_TAIL_LE, X_TAIL_TE, GEAR_X_FRONT):
+        d.add(f'<line class="g" x1="{gx}" y1="{-fin_top - 15}" x2="{gx}" y2="{-GEAR_Z + 15}"/>')
+    d.add(f'<line x1="{vb[0] + 20}" y1="{-GEAR_Z}" x2="{vb[0] + vb[2] - 20}" y2="{-GEAR_Z}" stroke="#6a4" stroke-width="2"/>')
+    d.add(f'<rect class="b" x="{FUS_X0}" y="{-FUS_ZTOP}" width="{FUS_X1 - FUS_X0}" height="{FUS_H}" rx="14"/>')
+    d.add(f'<rect class="w" x="0" y="{-FOAM_T / 2}" width="{CHORD}" height="{FOAM_T}"/>')
+    d.add(f'<circle class="b" cx="{X_SPAR}" cy="7.5" r="5"/>')
+    d.add(f'<rect class="b" x="{BOOM_X0}" y="{-Z_BOOM - BOOM_D / 2}" width="{BOOM_X1 - BOOM_X0}" height="{BOOM_D}"/>')
+    d.add(f'<rect class="r" x="{X_AXLE - 8}" y="2.5" width="{X_SPAR - X_AXLE + 20}" height="14"/>')
+    for th, dash in ((0, ""), (90, ""), (-15, ' stroke-dasharray="5 3"')):
+        (ax, az), (bx, bz) = disc_pts(th, 2)
+        d.add(f'<line x1="{ax:.1f}" y1="{-az:.1f}" x2="{bx:.1f}" y2="{-bz:.1f}" stroke="#2a62b8" stroke-width="3"{dash}/>')
+    d.add(f'<circle cx="{X_AXLE}" cy="{-Z_AXLE}" r="{math.hypot(H_PROP, R):.1f}" class="c"/>')
+    d.add(f'<circle cx="{X_AXLE}" cy="{-Z_AXLE}" r="3" fill="#b33"/>')
+    d.add(f'<line x1="{X_REAR - R}" y1="{-zr}" x2="{X_REAR + R}" y2="{-zr}" stroke="#2a62b8" stroke-width="3"/>')
+    d.add(f'<rect class="b" x="{X_REAR - 14}" y="{-zr}" width="28" height="{zr - Z_BOOM - BOOM_D / 2}"/>')
+    d.add(f'<rect class="w" x="{X_TAIL_LE}" y="{-zt}" width="{C_TAIL}" height="{FOAM_T}"/>')
+    d.add(f'<polygon class="w" points="{X_FIN0},{-zt} {FIN_TE},{-zt} {FIN_TE},{-fin_top} {FIN_TE - FIN_CT},{-fin_top}"/>')
+    d.add(f'<line class="c" x1="{FIN_TE - RUDDER_C}" y1="{-(zt + RUDDER_GAP)}" x2="{FIN_TE - RUDDER_C}" y2="{-fin_top}"/>')
     for gx in (GEAR_X_FRONT, GEAR_X_REAR):
         top = -12 if gx == GEAR_X_FRONT else Z_BOOM - BOOM_D / 2
-        s.append(f'<line x1="{gx}" y1="{-top}" x2="{gx}" y2="{-GEAR_Z}" stroke="#555" stroke-width="4"/>')
-    s.append(f'<circle class="cg" cx="{X_CG_TARGET}" cy="{30}" r="5"/>')
-    lab = [(X_AXLE - 20, -(Z_AXLE + H_PROP) - 22, "hover disc (0°); dashed: -15°"),
-           (X_AXLE - H_PROP - 120, -Z_AXLE + 70, "cruise disc (90°)"),
-           (X_AXLE - 30, -Z_AXLE + 38, "axle x=%.0f z=%.0f" % (X_AXLE, Z_AXLE)),
-           (X_REAR - R, -zr - 8, "rear prop z=%.0f" % zr),
-           (FIN_TE - FIN_CR - 230, -(zt + FIN_H) + 10, "fin (dashed: optional rudder hinge)"),
-           (X_CG_TARGET + 8, 34, "CG"),
-           (x0 + 10, -GEAR_Z + 20, "SIDE VIEW, 1 unit = 1 mm; ground = bottom of legs (z=%.0f)" % GEAR_Z)]
-    for (x, y, tx) in lab:
-        s.append(f'<text class="t" x="{x}" y="{y}">{tx}</text>')
-    s.append("</svg>")
+        d.add(f'<line x1="{gx}" y1="{-top}" x2="{gx}" y2="{-GEAR_Z}" stroke="#555" stroke-width="4"/>')
+    d.add(f'<circle class="cg" cx="{X_CG_TARGET}" cy="30" r="5"/>')
+    # tilt angle callout (hover = thrust up, cruise = thrust forward)
+    rA = 30
+    ax_, ay_ = X_AXLE, -Z_AXLE
+    d.add(f'<path class="d" d="M {ax_} {ay_ - rA} A {rA} {rA} 0 0 0 {ax_ - rA} {ay_}"/>')
+    d.arrow(ax_, ay_ - rA, 1, 0)
+    d.arrow(ax_ - rA, ay_, 0, 1)
+    d.text(ax_ - rA - 4, ay_ - rA + 2, "90° tilt", "dt", "end")
+    # --- chordwise dimensions above the airframe
+    yU = -90
+    d.hchain([X_AXLE, 0, X_SPAR, X_CG_TARGET, X_HINGE, CHORD], yU,
+             [-Z_AXLE, 0, 0, 30, 0, 0])
+    d.hdim(X_REAR - R, X_REAR + R, -zr - 24, f"Ø{_n(PROP_D)}", -zr, -zr)
+    d.hdim(FIN_TE - FIN_CT, FIN_TE, -fin_top - 22, f"{_n(FIN_CT)} fin tip", -fin_top, -fin_top)
+    d.hdim(FIN_TE - RUDDER_C, FIN_TE, -fin_top - 52, f"{_n(RUDDER_C)} rudder (opt.)", -fin_top, -fin_top)
+    # --- stations below the ground line
+    y1, y2, y3 = -GEAR_Z + 40, -GEAR_Z + 80, -GEAR_Z + 120
+    sx = [FUS_X0, X_AXLE, GEAR_X_FRONT, 0, CHORD, X_REAR, X_TAIL_LE, X_TAIL_TE]
+    d.hchain(sx, y1, [-GEAR_Z] * len(sx))
+    d.hdim(FUS_X0, FIN_TE, y2, f"{_n(FIN_TE - FUS_X0)} overall (nose to fin TE)", -GEAR_Z, -GEAR_Z)
+    d.hdim(GEAR_X_FRONT, GEAR_X_REAR, y3, f"{_n(GEAR_X_REAR - GEAR_X_FRONT)} gear base", -GEAR_Z, -GEAR_Z)
+    # --- heights, left column
+    xl1, xl2 = FUS_X0 - 35, FUS_X0 - 75
+    h_up = Z_AXLE + H_PROP
+    d.vchain([-GEAR_Z, -(FUS_ZTOP - FUS_H), -Z_AXLE, -h_up], xl1,
+             [FUS_X0 + 10, FUS_X0, X_AXLE - 6, X_AXLE - R - 6])
+    d.vdim(xl2, -GEAR_Z, -(Z_AXLE + H_PROP), None, X_AXLE - R - 6, X_AXLE - R - 6)
+    d.vdim(xl2 - 40, -GEAR_Z, 0, f"{_n(-GEAR_Z)} ground to wing", FUS_X0, FUS_X0)
+    # --- heights, right column
+    xr1, xr2 = FIN_TE + 40, FIN_TE + 80
+    d.vchain([-GEAR_Z, -zt, -fin_top], xr1, [FIN_TE] * 3)
+    d.vdim(xr2, -GEAR_Z, -fin_top, f"{_n(fin_top - GEAR_Z)} ground to fin top", FIN_TE, FIN_TE)
+    d.vdim(X_REAR + R + 45, -zr, -(Z_BOOM + BOOM_D / 2), f"{_n(zr - Z_BOOM - BOOM_D / 2)}",
+           X_REAR + R, X_REAR + R)
+    # labels
+    for (x, y, tx) in [
+        (X_AXLE - 20, -(Z_AXLE + H_PROP) - 12, "hover disc (0°); dashed: -15°"),
+        (X_AXLE - H_PROP - 120, -Z_AXLE + 70, "cruise disc (90°)"),
+        (X_AXLE - 30, -Z_AXLE + 38, f"axle x={_n(X_AXLE)} z={_n(Z_AXLE)}"),
+        (X_CG_TARGET + 8, 44, "CG"),
+        (X_TAIL_LE - 10, -fin_top + 10, "fin"),
+    ]:
+        d.text(x, y, tx, "t", "start")
+    d.frame(vb, "CITRUS TILTROTOR - Y tilt-tri", f"SIDE VIEW (nose left, ground z={_n(GEAR_Z)})", (notes0, notes1))
+    svg = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb[0]} {vb[1]} {vb[2]} {vb[3]}" '
+           f'width="{vb[2]}" height="{vb[3]}">', SVG_STYLE] + d.s + ["</svg>"]
     with open(os.path.join(out, "geometry-side.svg"), "w") as f:
-        f.write("\n".join(s))
+        f.write("\n".join(svg))
     print("\nWrote docs/geometry-top.svg and docs/geometry-side.svg")
 
 
