@@ -1,4 +1,4 @@
-# Citrus micro plane: BOM and weight budget
+# Lime Flyer: BOM and weight budget
 
 Config: elevon flying wing, pusher motor, ~600 mm span, 2S. Target AUW 125-150 g, well under the 250 g limit.
 Control: FS-i6 with its built-in elevon mixer; no flight controller.
