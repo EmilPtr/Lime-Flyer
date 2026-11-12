@@ -152,13 +152,14 @@ var{font-style:normal;font-family:var(--mono);font-weight:500}
 <header>
   <p class="kicker">Lime Flyer · design notes</p>
   <h1>Plane design, from the equations up</h1>
-  <p class="lead">Every equation and term you will use for the Lime Flyer, a sub-250 g conventional micro plane, each with a live calculator. The numbers start from this project (700 × 130 mm foam wing, 2S, a 1306-class motor). Change them and everything below follows. Your inputs are remembered in this browser.</p>
+  <p class="lead">Every equation and term you will use for the Lime Flyer, a sub-250 g conventional tractor micro plane, each with a live calculator. The numbers start from this project (700 × 130 mm KF-step foam board wing, 2S 800 mAh, an RS2205 on an EP-6035 prop). Change them and everything below follows. Your inputs are remembered in this browser.</p>
   <nav class="chips" aria-label="Sections">
     <a href="#sec-aircraft">Your aircraft</a>
     <a href="#sec-lift">Lift &amp; stall</a>
     <a href="#sec-drag">Drag &amp; cruise</a>
     <a href="#sec-thrust">Thrust &amp; battery</a>
     <a href="#sec-cg">CG &amp; stability</a>
+    <a href="#sec-layout">Nose layout</a>
     <a href="#sec-ctrl">Control surfaces</a>
     <a href="#sec-terms">Glossary</a>
     <a href="#sec-rules">Rules of thumb</a>
@@ -343,6 +344,30 @@ h_np = 0.25 + (a_t/a)(1 − dε/dα)·V_H·0.9</pre>
   <div class="stats" data-stats="ptot|Table total|g;pplaced|Parts placed|%;pcg|Computed CG|mm aft of LE;pcgp|Computed CG|% chord"></div>
 </section>
 
+<section id="sec-layout">
+  <h2>Nose layout and prop clearance</h2>
+  <p class="lead">This is a tractor: the motor and prop sit on the nose. That keeps the tail simple and puts the motor's weight where it helps the balance. The cost is that the prop hangs ahead of the airframe, so check how it clears the ground and the wing.</p>
+  <div class="cards">
+    <div class="card"><h3>Prop tip clearance</h3>
+      <pre class="eq">r = prop diameter / 2
+clearance = h − r</pre>
+      <p><var class="k-len">h</var> is the height of the shaft above the lowest part of the fuselage. A negative result means the prop reaches below the fuselage, so a belly landing can hit it. Raising the motor on the nose helps, but a 6 inch prop on a slim keel is still low.</p></div>
+    <div class="card"><h3>Largest prop that clears</h3>
+      <pre class="eq">D_max = 2 · h</pre>
+      <p>The diameter at which the tip just touches the bottom line of the fuselage. Landing with the throttle off and a short flare keeps most props safe, and a spare or printed prop makes a strike cheap.</p></div>
+    <div class="card"><h3>Prop to wing gap</h3>
+      <pre class="eq">gap = x_prop</pre>
+      <p>Distance from the prop plane back to the wing leading edge. Keep at least 20 mm so the prop does not hit the wing, and more if you want clean airflow over it.</p></div>
+  </div>
+  <div class="calc">
+    <div class="fields" data-fields="ax,noseX"></div>
+    <div class="right">
+      <div class="stats" data-stats="tipc|Prop tip clearance|mm;bigp|Largest prop that clears|in;gapw|Prop to wing gap|mm"></div>
+      <p class="note">Prop diameter comes from Your aircraft. The motor weight, position and the battery slot are in the CG worksheet above, so you can slide the battery until the balance point lands on your CG.</p>
+    </div>
+  </div>
+</section>
+
 <section id="sec-ctrl">
   <h2>Control surfaces and radio setup</h2>
   <p class="lead">Three control surfaces plus the throttle fly a conventional plane. The FS-i6 sends each stick straight to its own channel, so there is nothing to mix.</p>
@@ -420,16 +445,20 @@ var SPEC={
  stabA:{l:'Stabilizer area (with elevator)',u:'dm²',s:0.1},
  finA:{l:'Fin area',u:'dm²',s:0.1},
  lt:{l:'CG to tail quarter-chord',u:'mm',s:10},
- tailAR:{l:'Stabilizer aspect ratio',u:'',s:0.1,h:'Rough estimate'}
+ tailAR:{l:'Stabilizer aspect ratio',u:'',s:0.1,h:'Rough estimate'},
+ noseX:{l:'Prop plane ahead of wing LE',u:'mm',s:5},
+ ax:{l:'Motor axis above lowest fuselage point',u:'mm',s:1,h:'Height of the prop shaft above the bottom of the fuselage at the nose'}
 };
-var DEF={span:700,chord:130,mass:160,thrust:320,cells:2,mah:650,propd:5,rho:1.225,clmax:0.9,
- vtest:8,cltest:0.4,vcruise:10,cd0:0.08,e:0.7,etap:0.4,usable:80,kv:3000,pitch:3,
- cgpct:33,stabA:1.6,finA:0.8,lt:400,tailAR:3};
+var DEF={span:700,chord:130,mass:205,thrust:480,cells:2,mah:800,propd:6,rho:1.225,clmax:0.9,
+ vtest:8,cltest:0.4,vcruise:10,cd0:0.09,e:0.7,etap:0.4,usable:80,kv:2300,pitch:3.5,
+ cgpct:32,stabA:1.65,finA:0.8,lt:400,tailAR:3,noseX:125,ax:40};
 var DEFPARTS=[
- {n:'Motor',m:12,x:''},{n:'ESC',m:6,x:''},{n:'Prop',m:3,x:''},{n:'3 servos (2 aileron, 1 elevator)',m:18,x:''},
- {n:'Receiver',m:15,x:''},{n:'Battery 2S 650',m:40,x:''},{n:'Foam wing',m:28,x:''},
- {n:'Carbon rod spars',m:5,x:''},{n:'Fuselage, boom and tail',m:20,x:''},{n:'Wiring and connectors',m:8,x:''},{n:'Printed motor mount and tray',m:5,x:''}];
-var PRESETS=[['700 × 130',700,130,160],['600 × 120',600,120,125],['800 × 140',800,140,190],['500 × 110',500,110,95]];
+ {n:'RS2205 motor',m:30,x:-115},{n:'EP-6035 prop',m:6,x:-125},{n:'ESC (nano 25 A)',m:4,x:-70},
+ {n:'2 aileron servos',m:18,x:60},{n:'Elevator servo',m:9,x:330},
+ {n:'Receiver',m:15,x:10},{n:'Battery 2S 800',m:43,x:8},{n:'Foam wing (KF, 2 layers)',m:38,x:65},
+ {n:'Stabilizer and fin',m:7,x:450},{n:'Keel (fuselage)',m:9,x:200},
+ {n:'Wiring and connectors',m:8,x:30},{n:'Printed motor mount and tray',m:8,x:-80},{n:'Hot glue and tape',m:10,x:150}];
+var PRESETS=[['700 × 130',700,130,205],['600 × 120',600,120,170],['800 × 140',800,140,235],['500 × 110',500,110,140]];
 
 var S=JSON.parse(JSON.stringify(DEF));
 var parts=JSON.parse(JSON.stringify(DEFPARTS));
@@ -448,7 +477,7 @@ var KM={
  liftg:['L','force'],clreq:['CL','coef'],vlevel:['V','speed'],clc:['CL','coef'],cdi:['CDi','coef'],cdt:['CD','coef'],
  ld:['L/D','coef'],dragg:['D','force'],pael:['P_aero','power'],pel:['P_elec','power'],icr:['I','elec'],
  ttot:['T','force'],tw2:['T/W','coef'],cthr:['','coef'],icr2:['I','elec'],th:['','elec'],ps:['V_pitch','speed'],tup:['T','force'],
- hnp:['h_np','coef'],sm:['SM','coef'],vh:['V_H','coef'],vv:['V_V','coef'],
+ noseX:['x','len'],ax:['h','len'],tipc:['','len'],bigp:['','len'],gapw:['','len'],hnp:['h_np','coef'],sm:['SM','coef'],vh:['V_H','coef'],vv:['V_V','coef'],
  ptot:['Σm','mass'],pplaced:['','mass'],pcg:['x_cg','len'],pcgp:['x_cg / c','len']
 };
 function kindOf(k){return (KM[k]||['','const'])[1]}
@@ -583,9 +612,15 @@ function rCG(g){
  stat('pplaced',fx(pcres.M>0?pcres.Mp/pcres.M*100:0,0),pcres.M>0&&pcres.Mp/pcres.M>=0.99?'good':'warn',pcres.M>0&&pcres.Mp/pcres.M>=0.99?'complete':'positions missing');
  out('pcg',fx(pcres.xcg,0));out('pcgp',fx(pcres.xcg/S.chord*100,1));
 }
+function rLayout(){
+ var r=S.propd*25.4/2,clr=S.ax-r;
+ stat('tipc',fx(clr,0),clr>=0?'good':clr>=-30?'warn':'bad',clr>=0?'clears the fuselage':clr>=-30?'tip below fuselage':'hangs well below');
+ out('bigp',fx(2*S.ax/25.4,1));
+ stat('gapw',fx(S.noseX,0),S.noseX>=20?'good':S.noseX>=0?'warn':'bad',S.noseX>=20?'ok':S.noseX>=0?'tight':'overlap');
+}
 function renderAll(){
  var g=geo(),m=rSummary(g);
- rLift(g,m.vs);rDrag(g,m.vs);rThrust(g,m);rCG(g);
+ rLift(g,m.vs);rDrag(g,m.vs);rThrust(g,m);rCG(g);rLayout();
 }
 
 /* ---------- glossary + rules ---------- */
@@ -599,6 +634,7 @@ var TERMS=[
 ['Trailing edge (TE)','Geometry','The rear edge of the wing, where the flow leaves. Keep it thin.'],
 ['Airfoil','Geometry','The cross-section shape of the wing.'],
 ['Camber','Geometry','Curvature of the airfoil. A cambered wing makes lift at zero angle of attack and gives a higher CLmax than a flat plate.'],
+['KF (Kline-Fogleman) step','Geometry','A step in the wing surface, usually made by gluing a second layer on part of the wing. It is easy to build from flat sheets and stalls gently.'],
 ['Dihedral','Geometry','The upward angle of the wings seen from the front. It adds roll stability.'],
 ['Lift (L)','Aerodynamics','The force that holds the aircraft up, perpendicular to the airflow.'],
 ['Drag (D)','Aerodynamics','The force opposing motion through the air.'],
@@ -631,6 +667,7 @@ var TERMS=[
 ['Pushrod and horn','Controls','The wire and the lever that connect a servo to a surface.'],
 ['Thrust-to-weight','Propulsion','Static thrust divided by weight. Above 1 a plane can climb. About 2 is comfortable for hand launch.'],
 ['Static thrust','Propulsion','Thrust with the aircraft stationary. Measure it on a scale.'],
+['Tractor','Propulsion','A motor mounted on the nose, pulling the plane. It keeps the tail simple but the prop is exposed in a belly landing.'],
 ['Pusher','Propulsion','A motor mounted behind the wing, pushing the plane. It keeps the prop clear of hands and the nose.'],
 ['Prop wash (slipstream)','Propulsion','Air accelerated by the prop. It speeds the flow over any surface behind it.'],
 ['Pitch speed','Propulsion','Prop pitch times RPM. The speed at which the prop stops producing thrust.'],
