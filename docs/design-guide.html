@@ -152,7 +152,7 @@ var{font-style:normal;font-family:var(--mono);font-weight:500}
 <header>
   <p class="kicker">Lime Flyer · design notes</p>
   <h1>Plane design, from the equations up</h1>
-  <p class="lead">Every equation and term you will use for the Lime Flyer, a sub-250 g conventional tractor micro plane, each with a live calculator. The numbers start from this project (700 × 130 mm KF-step foam board wing, 2S 800 mAh, an RS2205 on an EP-6035 prop). Change them and everything below follows. Your inputs are remembered in this browser.</p>
+  <p class="lead">Every equation and term you will use for the Lime Flyer, a sub-250 g conventional tractor micro plane, each with a live calculator. The numbers start from this project (800 × 150 mm KF-step foam board wing, 2S 800 mAh, an RS2205 on an EP-6035 prop). Change them and everything below follows. Your inputs are remembered in this browser.</p>
   <nav class="chips" aria-label="Sections">
     <a href="#sec-aircraft">Your aircraft</a>
     <a href="#sec-lift">Lift &amp; stall</a>
@@ -210,6 +210,9 @@ V = √( 2W / (ρ · S · CL) )</pre>
     <div class="card"><h3>Stall speed</h3>
       <pre class="eq">V_stall = √( 2W / (ρ · S · CLmax) )</pre>
       <p>CLmax is the most lift the wing can make before the airflow separates. Stall speed sets how fast you must throw the plane at launch and how fast it lands. Slower is gentler on a foam wing.</p></div>
+    <div class="card"><h3>Dihedral</h3>
+      <pre class="eq">tip rise = (b / 2) · tan(angle)</pre>
+      <p>Tilting the wing halves up into a shallow V makes the plane roll itself level after a gust or a rough launch, which matters with no gyro. For this plane use about 2 to 3° per side: 400 mm × tan 2.5° ≈ 17 mm of tip rise. More makes it wallow and blunts the ailerons.</p></div>
     <div class="card"><h3>Wing loading</h3>
       <pre class="eq">loading = m / S   [grams per dm²]</pre>
       <p>Mass per wing area. Low loading is floaty and slow, which suits a micro plane. High loading is fast and handles wind better, but lands hard.</p></div>
@@ -449,16 +452,16 @@ var SPEC={
  noseX:{l:'Prop plane ahead of wing LE',u:'mm',s:5},
  ax:{l:'Motor axis above lowest fuselage point',u:'mm',s:1,h:'Height of the prop shaft above the bottom of the fuselage at the nose'}
 };
-var DEF={span:700,chord:130,mass:205,thrust:480,cells:2,mah:800,propd:6,rho:1.225,clmax:0.9,
+var DEF={span:800,chord:150,mass:219,thrust:480,cells:2,mah:800,propd:6,rho:1.225,clmax:0.9,
  vtest:8,cltest:0.4,vcruise:10,cd0:0.09,e:0.7,etap:0.4,usable:80,kv:2300,pitch:3.5,
- cgpct:32,stabA:1.65,finA:0.8,lt:400,tailAR:3,noseX:125,ax:40};
+ cgpct:32,stabA:2.2,finA:0.8,lt:400,tailAR:3,noseX:125,ax:40};
 var DEFPARTS=[
  {n:'RS2205 motor',m:30,x:-115},{n:'EP-6035 prop',m:6,x:-125},{n:'ESC (nano 25 A)',m:4,x:-70},
  {n:'2 aileron servos',m:18,x:60},{n:'Elevator servo',m:9,x:330},
- {n:'Receiver',m:15,x:10},{n:'Battery 2S 800',m:43,x:8},{n:'Foam wing (KF, 2 layers)',m:38,x:65},
- {n:'Stabilizer and fin',m:7,x:450},{n:'Keel (fuselage)',m:9,x:200},
+ {n:'Receiver',m:15,x:10},{n:'Battery 2S 800',m:43,x:8},{n:'Foam wing (KF, 2 layers)',m:50,x:75},
+ {n:'Stabilizer and fin',m:9,x:450},{n:'Keel (fuselage)',m:9,x:200},
  {n:'Wiring and connectors',m:8,x:30},{n:'Printed motor mount and tray',m:8,x:-80},{n:'Hot glue and tape',m:10,x:150}];
-var PRESETS=[['700 × 130',700,130,205],['600 × 120',600,120,170],['800 × 140',800,140,235],['500 × 110',500,110,140]];
+var PRESETS=[['800 × 150',800,150,219],['700 × 130',700,130,205],['600 × 120',600,120,170],['800 × 140',800,140,235],['500 × 110',500,110,140]];
 
 var S=JSON.parse(JSON.stringify(DEF));
 var parts=JSON.parse(JSON.stringify(DEFPARTS));

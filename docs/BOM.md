@@ -1,6 +1,6 @@
 # Lime Flyer: BOM and weight budget
 
-Config: conventional micro plane. Straight foam wing with ailerons, printed or foam fuselage with a tail boom, flat stabilizer with elevator, fixed fin (rudder optional). Tractor or pusher motor, ~700 mm span, 2S. Target AUW 160-210 g (about 180 g typical, with the 30 g RS2205), well under the 250 g limit.
+Config: conventional micro plane. Foam wing with ailerons and a small centerline dihedral (about 2-3 deg per side, ~17 mm tip rise), printed or foam fuselage with a tail boom, flat stabilizer with elevator, fixed fin (rudder optional). Tractor or pusher motor, ~800 mm span, 2S. Target AUW 170-220 g (about 190 g typical, with the 30 g RS2205), well under the 250 g limit.
 Control: FS-i6, 3 channels plus throttle (aileron, elevator, throttle; rudder on a 4th if fitted). No flight controller and no mixing needed.
 
 All weights and prices are ESTIMATES until measured. Verify before buying.
@@ -25,7 +25,7 @@ All weights and prices are ESTIMATES until measured. Verify before buying.
 |---|---|---|---|
 | Wire, Y-lead, connectors, glue, tape, hardware | ~10 g | ~$8 | whatever you do not already have |
 | Wing spar (optional) | ~0-5 g | $0-5 | carbon rod not required; try the foam board alone, add a skewer, dowel or tape stiffener if the wing flexes |
-| **Total** | **~160-210 g** | **~$0-15** | Well under 250 g |
+| **Total** | **~170-220 g** | **~$0-15** | Well under 250 g |
 
 Optional: a 4th micro servo (~$4, ~4 g) for a rudder. 2-blade 5x3 props (~$5) if you want a lighter, more efficient baseline.
 
