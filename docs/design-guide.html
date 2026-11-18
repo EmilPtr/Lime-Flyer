@@ -452,16 +452,16 @@ var SPEC={
  noseX:{l:'Prop plane ahead of wing LE',u:'mm',s:5},
  ax:{l:'Motor axis above lowest fuselage point',u:'mm',s:1,h:'Height of the prop shaft above the bottom of the fuselage at the nose'}
 };
-var DEF={span:800,chord:150,mass:219,thrust:480,cells:2,mah:800,propd:6,rho:1.225,clmax:0.9,
+var DEF={span:800,chord:150,mass:226,thrust:480,cells:2,mah:800,propd:6,rho:1.225,clmax:0.9,
  vtest:8,cltest:0.4,vcruise:10,cd0:0.09,e:0.7,etap:0.4,usable:80,kv:2300,pitch:3.5,
- cgpct:32,stabA:2.2,finA:0.8,lt:400,tailAR:3,noseX:125,ax:40};
+ cgpct:30,stabA:2.75,finA:0.96,lt:390,tailAR:2.3,noseX:125,ax:40};
 var DEFPARTS=[
  {n:'RS2205 motor',m:30,x:-115},{n:'EP-6035 prop',m:6,x:-125},{n:'ESC (nano 25 A)',m:4,x:-70},
  {n:'2 aileron servos',m:18,x:60},{n:'Elevator servo',m:9,x:330},
  {n:'Receiver',m:15,x:10},{n:'Battery 2S 800',m:43,x:8},{n:'Foam wing (KF, 2 layers)',m:50,x:75},
- {n:'Stabilizer and fin',m:9,x:450},{n:'Keel (fuselage)',m:9,x:200},
+ {n:'Stabilizer and fin',m:16,x:440},{n:'Keel (fuselage)',m:9,x:200},
  {n:'Wiring and connectors',m:8,x:30},{n:'Printed motor mount and tray',m:8,x:-80},{n:'Hot glue and tape',m:10,x:150}];
-var PRESETS=[['800 × 150',800,150,219],['700 × 130',700,130,205],['600 × 120',600,120,170],['800 × 140',800,140,235],['500 × 110',500,110,140]];
+var PRESETS=[['800 × 150',800,150,226],['700 × 130',700,130,205],['600 × 120',600,120,170],['800 × 140',800,140,235],['500 × 110',500,110,140]];
 
 var S=JSON.parse(JSON.stringify(DEF));
 var parts=JSON.parse(JSON.stringify(DEFPARTS));

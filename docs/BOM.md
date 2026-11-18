@@ -1,6 +1,6 @@
 # Lime Flyer: BOM and weight budget
 
-Config: conventional micro plane. Foam wing with ailerons and a small centerline dihedral (about 2-3 deg per side, ~17 mm tip rise), printed or foam fuselage with a tail boom, flat stabilizer with elevator, fixed fin (rudder optional). Tractor or pusher motor, ~800 mm span, 2S. Target AUW 170-220 g (about 190 g typical, with the 30 g RS2205), well under the 250 g limit.
+Config: conventional micro plane. Foam wing with ailerons and a small centerline dihedral (about 2-3 deg per side, ~17 mm tip rise), printed or foam fuselage with a tail boom, flat stabilizer with elevator (250 span x 110 chord mm = 275 cm2, V_H 0.6, tail arm 400 mm from the wing quarter-chord to the tail quarter-chord, ~12-14 g), fixed fin (100 high x 96 chord mm = 96 cm2, rudder optional). Tractor or pusher motor, ~800 mm span, 2S. Target AUW 170-220 g (about 190 g typical, with the 30 g RS2205), well under the 250 g limit.
 Control: FS-i6, 3 channels plus throttle (aileron, elevator, throttle; rudder on a 4th if fitted). No flight controller and no mixing needed.
 
 All weights and prices are ESTIMATES until measured. Verify before buying.
@@ -29,9 +29,13 @@ All weights and prices are ESTIMATES until measured. Verify before buying.
 
 Optional: a 4th micro servo (~$4, ~4 g) for a rudder. 2-blade 5x3 props (~$5) if you want a lighter, more efficient baseline.
 
+## Build notes
+- Cut 2 wing sections that add up to 900 mm. The dihedral joint at the centerline costs about 50 mm per side (100 mm total), leaving the 800 mm span used everywhere else.
+- On the end of each section that connects to the plane, leave 50 mm bare: absolutely no airfoil (no KF step) there.
+
 ## Checks before the first flight
 1. Bench test the motor on the EP-6035 with a scale and watt meter, restrained: confirm thrust is at least 1.5x the weight and note the current at full and half throttle. Set a throttle limit in the radio.
-2. Balance the CG at the spot the plan gives; adjust with battery position.
+2. Balance the CG at the spot the plan gives (start at 30% chord, 45 mm back from the wing leading edge; neutral point is estimated at ~68 mm, so static margin ~15%); adjust with battery position.
 3. Servo directions with the props off: stick right raises the right aileron and drops the left; stick back raises the elevator.
 4. Range check and failsafe set on the FS-i6 (throttle cut, controls neutral).
 
