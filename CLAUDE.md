@@ -5,7 +5,7 @@ Sub-250 g RC plane, hand-launched. Owner builds it at home (Bambu A1 printer, ho
 ## Decisions (do not re-open without asking)
 - Conventional layout (ailerons, elevator, fixed fin, rudder optional). NOT a flying wing.
 - Tractor: motor and prop on the nose.
-- Wing: 5 mm foam board, KF step, ~800 x 150 mm. No carbon rod required. Small dihedral, about 2-3 deg per side (~17 mm tip rise), as a single break at the centerline.
+- Wing: 3 mm foam board (owner has 3 mm, not 5 mm), flat for the first flight (KF step only added later if needed), ~800 x 150 mm. 3 mm is much less stiff (~0.2x of 5 mm), so plan a spar (carbon rod, skewer or dowel along the thickest line, or tape strip) rather than none. Small dihedral, about 2-3 deg per side (~17 mm tip rise), as a single break at the centerline.
 - Power: RS2205 2300KV on 2S, EP-6035 prop (6.0 x 3.5 in), nano AM32 25 A ESC with BEC, 2S 800 mAh LiPo. Owner plans to stay at or under about 50% throttle and set a throttle limit.
 - Radio: FS-i6 with an AFHDS 2A receiver. No flight controller, no mixing.
 - The earlier tilt-tri VTOL was dropped; its files are in git history (commit 1ddb056, under archive/tilt-tri/).
