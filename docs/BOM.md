@@ -35,7 +35,8 @@ All weights and prices are ESTIMATES until measured. Verify before buying.
 |---|---|---|---|
 | Wire, Y-lead, connectors, glue, tape, hardware | ~10 g | ~$8 | whatever you do not already have |
 | Wing spar | ~3-6 g | $0-5 | 3 mm board is only ~0.2x as stiff as 5 mm: add a spar (carbon rod, skewer or dowel) plus a tape strip (a flat wing has no KF layer to help) |
-| **Total** | **~234 g** | **~$0-15** | ~16 g under 250 g on estimates only; weigh the finished plane before flying |
+| KFm-2 step layers (optional, not in total) | ~+18-24 g | ~$0-3 | two stacked 3 mm step layers on the wing, using board you own. Would put AUW at ~252-258 g, OVER 250 g on estimates. Only fit if you cut weight elsewhere (e.g. the 37.1 g fuselage top half) or drop the spar (-3-6 g). A single KF step is ~+12 g (~246 g) |
+| **Total** | **~234 g** | **~$0-15** | ~16 g under 250 g on estimates only; weigh the finished plane before flying. Excludes the optional KFm-2 row |
 
 Optional: a 4th micro servo (~$4, ~4 g) for a rudder. 2-blade 5x3 props (~$5) if you want a lighter, more efficient baseline.
 
@@ -45,7 +46,7 @@ Optional: a 4th micro servo (~$4, ~4 g) for a rudder. 2-blade 5x3 props (~$5) if
 
 ## Checks before the first flight
 1. Bench test the motor on the EP-6035 with a scale and watt meter, restrained: confirm thrust is at least 1.5x the weight and note the current at full and half throttle. Set a throttle limit in the radio.
-2. Balance the CG at the spot the plan gives (start at 30% chord, 45 mm back from the wing leading edge; neutral point is estimated at ~68 mm, so static margin ~15%); adjust with battery position.
+2. Balance the CG at the spot the plan gives (target 35% chord, 53 mm back from the wing leading edge; neutral point is estimated at ~68 mm, so static margin 10%; start a little forward, around 50 mm, and move aft after test glides); adjust with battery position.
 3. Servo directions with the props off: stick right raises the right aileron and drops the left; stick back raises the elevator.
 4. Range check and failsafe set on the FS-i6 (throttle cut, controls neutral).
 
