@@ -1,6 +1,6 @@
 # Lime Flyer: BOM and weight budget
 
-Config: conventional micro plane. Foam wing with ailerons and a small centerline dihedral (about 2-3 deg per side, ~17 mm tip rise), printed or foam fuselage with a tail boom, flat stabilizer with elevator (250 span x 108 chord mm = 270 cm2, V_H 0.6, tail arm 400 mm from the wing quarter-chord to the tail quarter-chord, ~12-14 g), fixed fin (100 high x 96 chord mm = 96 cm2, rudder optional). Tractor or pusher motor, ~800 mm span, 2S. Estimated AUW is about 234 g: 66.2 g of measured printed parts (table below), a flat single-layer wing (~38 g est.), and electronics and fasteners. UNDER the 250 g limit (~16 g margin) on estimates, so weigh everything before flying. Target is under about 240 g.
+Config: conventional micro plane. Foam wing with ailerons and a small centerline dihedral (about 2-3 deg per side, ~17 mm tip rise), printed or foam fuselage with a tail boom, flat stabilizer with elevator (250 span x 108 chord mm = 270 cm2, V_H 0.6, tail arm 400 mm from the wing quarter-chord to the tail quarter-chord, ~12-14 g), fixed fin (100 high x 96 chord mm = 96 cm2, rudder optional). Tractor or pusher motor, ~800 mm span, 2S. Estimated AUW is about 223 g: ~55 g of printed parts (owner-reported total, table below), a flat single-layer wing (~38 g est.), and electronics and fasteners. UNDER the 250 g limit (~27 g margin) on estimates, so weigh everything before flying. Target is under about 240 g.
 Control: FS-i6, 3 channels plus throttle (aileron, elevator, throttle; rudder on a 4th if fitted). No flight controller and no mixing needed.
 
 All weights and prices are ESTIMATES until measured. Verify before buying.
@@ -21,6 +21,7 @@ All weights and prices are ESTIMATES until measured. Verify before buying.
 | Spare 5 V BEC | use if the ESC has no 5 V output (check the pinout with a meter) |
 
 ## Printed parts (measured)
+Per-part rows are from the earlier print set and are now stale; the total is the latest reported figure. Update the rows when re-weighed.
 | Part | Weight |
 |---|---|
 | Fuselage top half | 37.1 g |
@@ -28,15 +29,14 @@ All weights and prices are ESTIMATES until measured. Verify before buying.
 | Motor mount | 1.5 g |
 | Main tail boom | 6.8 g |
 | Tail (stabilizer and fin, printed) | 14.3 g |
-| **Total printed** | **66.2 g** |
+| **Total printed (owner-reported, after changes)** | **~55 g** |
 
 ## To buy
 | Item | Weight | Est. cost | Notes |
 |---|---|---|---|
 | Wire, Y-lead, connectors, glue, tape, hardware | ~10 g | ~$8 | whatever you do not already have |
 | Wing spar | ~3-6 g | $0-5 | 3 mm board is only ~0.2x as stiff as 5 mm: add a spar (carbon rod, skewer or dowel) plus a tape strip (a flat wing has no KF layer to help) |
-| KFm-2 step layers (optional, not in total) | ~+18-24 g | ~$0-3 | two stacked 3 mm step layers on the wing, using board you own. Would put AUW at ~252-258 g, OVER 250 g on estimates. Only fit if you cut weight elsewhere (e.g. the 37.1 g fuselage top half) or drop the spar (-3-6 g). A single KF step is ~+12 g (~246 g) |
-| **Total** | **~234 g** | **~$0-15** | ~16 g under 250 g on estimates only; weigh the finished plane before flying. Excludes the optional KFm-2 row |
+| **Total** | **~223 g** | **~$0-15** | ~27 g under 250 g on estimates only; weigh the finished plane before flying |
 
 Optional: a 4th micro servo (~$4, ~4 g) for a rudder. 2-blade 5x3 props (~$5) if you want a lighter, more efficient baseline.
 
